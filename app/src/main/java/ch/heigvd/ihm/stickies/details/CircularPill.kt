@@ -10,7 +10,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Providers
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,10 +20,12 @@ import androidx.ui.tooling.preview.Preview
 fun CircularPill(
     color: Color,
     modifier: Modifier = Modifier,
+    filled: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val border = remember(color) { color.copy(alpha = 0.1f) }
-    val background = remember(color) { color.copy(alpha = 0.05f) }
+    val backgroundAlpha = if (filled) 0.15f else 0.05f
+    val border = color.copy(alpha = 0.1f)
+    val background = color.copy(alpha = backgroundAlpha)
     Column(
         modifier
             .preferredSize(76.dp)
@@ -42,9 +43,14 @@ fun CircularPill(
 @Composable
 @Preview
 private fun CircularPillPreview() {
-    Stack(Modifier.background(Color.White).padding(16.dp)) {
+    Column(Modifier.background(Color.White).padding(16.dp)) {
         CircularPill(color = Color.Red) {
             Text("Tue", style = MaterialTheme.typography.subtitle1)
+            Text("•", style = MaterialTheme.typography.subtitle2)
+        }
+
+        CircularPill(color = Color.Red, Modifier.padding(top = 16.dp), filled = true) {
+            Text("Wed", style = MaterialTheme.typography.subtitle1)
             Text("•", style = MaterialTheme.typography.subtitle2)
         }
     }

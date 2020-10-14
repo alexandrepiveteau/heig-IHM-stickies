@@ -1,5 +1,6 @@
 package ch.heigvd.ihm.stickies.details
 
+import androidx.compose.animation.animate
 import androidx.compose.foundation.ContentColorAmbient
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
@@ -23,8 +24,8 @@ fun CircularPill(
     filled: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val backgroundAlpha = if (filled) 0.15f else 0.05f
-    val border = color.copy(alpha = 0.1f)
+    val backgroundAlpha = animate(if (filled) 1f else 0.1f)
+    val border = animate(color)
     val background = color.copy(alpha = backgroundAlpha)
     Column(
         modifier
@@ -46,11 +47,6 @@ private fun CircularPillPreview() {
     Column(Modifier.background(Color.White).padding(16.dp)) {
         CircularPill(color = Color.Red) {
             Text("Tue", style = MaterialTheme.typography.subtitle1)
-            Text("•", style = MaterialTheme.typography.subtitle2)
-        }
-
-        CircularPill(color = Color.Red, Modifier.padding(top = 16.dp), filled = true) {
-            Text("Wed", style = MaterialTheme.typography.subtitle1)
             Text("•", style = MaterialTheme.typography.subtitle2)
         }
     }

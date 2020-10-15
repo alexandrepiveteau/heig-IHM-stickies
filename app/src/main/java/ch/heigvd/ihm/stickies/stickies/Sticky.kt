@@ -2,7 +2,7 @@ package ch.heigvd.ihm.stickies.stickies
 
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Stack
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.preferredSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,7 +33,7 @@ fun Sticky(
         shape = RoundedCornerShape(8.dp),
         elevation = 4.dp,
     ) {
-        Stack(alignment = Alignment.Center) {
+        Box(alignment = Alignment.Center) {
             content()
             val (checked, setChecked) = remember { mutableStateOf(false) }
             Switch(checked = checked, onCheckedChange = { setChecked(!checked) })
@@ -44,7 +44,7 @@ fun Sticky(
 @Composable
 @Preview
 fun Demo() {
-    Stack(Modifier.fillMaxSize(), alignment = Alignment.Center) {
+    Box(Modifier.fillMaxSize(), alignment = Alignment.Center) {
         val (value, setValue) = remember { mutableStateOf(Color.Red) }
         Sticky(
             color = value,

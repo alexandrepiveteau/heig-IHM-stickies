@@ -10,8 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedTask
-import androidx.compose.runtime.compositionReference
 import androidx.compose.runtime.onActive
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,16 +25,6 @@ fun Sticky(
     onClick: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly
-    ) {
-        Text("Début", Modifier.align(Alignment.Start))
-        Text("Fin", Modifier.align(Alignment.End))
-    }
-    onActive {
-
-    }
     Surface(
         modifier = modifier
             .preferredSize(256.dp)

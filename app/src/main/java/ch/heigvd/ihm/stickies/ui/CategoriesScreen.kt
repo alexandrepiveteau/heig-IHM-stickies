@@ -112,36 +112,38 @@ private inline fun FreeformPile(
     val bubbled = remember(stickies) { stickies.any { it.highlighted } }
 
     stickies.fastForEachIndexedReversed { index, sticky ->
-        if (index == 0) {
-            FreeformSticky(
-                bubbled = bubbled,
-                dragged = dragged,
-                offset = restOffset + dragOffset,
-                title = sticky.title,
-                color = sticky.color,
-                pileIndex = index,
-                pileSize = stickies.size,
-                onDragStarted = { setDragged(true) },
-                onDragOffset = { delta ->
-                    setDragOffset(dragOffset + delta)
-                    onDrag(restOffset + dragOffset + delta)
-                },
-                onDragStopped = {
-                    setDragged(false)
-                    setDragOffset(Offset.Zero)
-                    onDrop()
-                },
-            )
-        } else {
-            FreeformSticky(
-                bubbled = false,
-                dragged = dragged,
-                offset = restOffset + dragOffset,
-                title = sticky.title,
-                color = sticky.color,
-                pileIndex = index,
-                pileSize = stickies.size
-            )
+        key(sticky.identifier) {
+            if (index == 0) {
+                FreeformSticky(
+                    bubbled = bubbled,
+                    dragged = dragged,
+                    offset = restOffset + dragOffset,
+                    title = sticky.title,
+                    color = sticky.color,
+                    pileIndex = index,
+                    pileSize = stickies.size,
+                    onDragStarted = { setDragged(true) },
+                    onDragOffset = { delta ->
+                        setDragOffset(dragOffset + delta)
+                        onDrag(restOffset + dragOffset + delta)
+                    },
+                    onDragStopped = {
+                        setDragged(false)
+                        setDragOffset(Offset.Zero)
+                        onDrop()
+                    },
+                )
+            } else {
+                FreeformSticky(
+                    bubbled = false,
+                    dragged = dragged,
+                    offset = restOffset + dragOffset,
+                    title = sticky.title,
+                    color = sticky.color,
+                    pileIndex = index,
+                    pileSize = stickies.size
+                )
+            }
         }
     }
 }

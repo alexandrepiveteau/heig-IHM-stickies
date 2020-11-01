@@ -13,6 +13,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import ch.heigvd.ihm.stickies.model.Sticky
+
+@Composable
+fun Sticky(
+    data: Sticky,
+    modifier: Modifier = Modifier,
+) {
+    Sticky(
+        text = data.title,
+        highlighted = data.highlighted,
+        modifier = modifier,
+    )
+}
 
 @Composable
 fun Sticky(

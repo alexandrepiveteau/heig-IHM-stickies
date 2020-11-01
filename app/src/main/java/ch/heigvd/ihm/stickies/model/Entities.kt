@@ -8,4 +8,5 @@ data class Category(
 data class Sticky(
     val identifier: Long,
     val title: String,
+    val highlighted: Boolean,
 )

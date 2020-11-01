@@ -44,10 +44,13 @@ fun Placeholder(
     val color = Color.Black.copy(alpha = 0.2f)
     Providers(AmbientContentColor provides color) {
         Column(modifier) {
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(Modifier.preferredWidth(8.dp))
                 Icon(asset, Modifier.preferredSize(24.dp))
+                Spacer(Modifier.preferredWidth(8.dp))
                 Text(title, style = HintTextStyle)
             }
+            Spacer(Modifier.preferredHeight(8.dp))
             Box(
                 modifier = Modifier
                     .border(4.dp, AmbientContentColor.current, RoundedCornerShape(32.dp))
@@ -64,6 +67,7 @@ fun Placeholder(
                                 transformOrigin = TransformOrigin.Center,
                             )
                     )
+                    Spacer(Modifier.preferredHeight(8.dp))
                     Text(title, style = ContentTextStyle)
                 }
             }

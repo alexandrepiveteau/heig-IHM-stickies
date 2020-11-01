@@ -1,4 +1,4 @@
-package ch.heigvd.ihm.stickies.details
+package ch.heigvd.ihm.stickies.ui.details
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

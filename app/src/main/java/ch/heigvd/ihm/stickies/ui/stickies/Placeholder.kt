@@ -4,15 +4,35 @@ import androidx.compose.foundation.AmbientContentColor
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Providers
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.TransformOrigin
+import androidx.compose.ui.drawLayer
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
 import ch.heigvd.ihm.stickies.R
+import ch.heigvd.ihm.stickies.ui.Archivo
+
+private val HintTextStyle = TextStyle(
+    fontFamily = Archivo,
+    fontSize = 14.sp,
+    fontWeight = FontWeight.Bold,
+)
+private val ContentTextStyle = TextStyle(
+    fontFamily = Archivo,
+    fontSize = 24.sp,
+    fontWeight = FontWeight.Bold,
+)
 
 @Composable
 fun Placeholder(
@@ -20,21 +40,35 @@ fun Placeholder(
     asset: VectorAsset,
     modifier: Modifier = Modifier,
 ) {
-    ProvideEmphasis(AmbientEmphasisLevels.current.disabled) {
+    // TODO : Use context-provided instead.
+    val color = Color.Black.copy(alpha = 0.2f)
+    Providers(AmbientContentColor provides color) {
         Column(modifier) {
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(Modifier.preferredWidth(8.dp))
                 Icon(asset, Modifier.preferredSize(24.dp))
-                Text(title)
+                Spacer(Modifier.preferredWidth(8.dp))
+                Text(title, style = HintTextStyle)
             }
+            Spacer(Modifier.preferredHeight(8.dp))
             Box(
                 modifier = Modifier
-                    .border(1.dp, AmbientContentColor.current)
+                    .border(4.dp, AmbientContentColor.current, RoundedCornerShape(32.dp))
                     .preferredSize(256.dp),
                 alignment = Alignment.Center,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(asset, Modifier.preferredSize(64.dp))
-                    Text(title)
+                    Icon(
+                        asset, Modifier
+                            .preferredSize(64.dp)
+                            .drawLayer(
+                                scaleX = 3f,
+                                scaleY = 3f,
+                                transformOrigin = TransformOrigin.Center,
+                            )
+                    )
+                    Spacer(Modifier.preferredHeight(8.dp))
+                    Text(title, style = ContentTextStyle)
                 }
             }
         }

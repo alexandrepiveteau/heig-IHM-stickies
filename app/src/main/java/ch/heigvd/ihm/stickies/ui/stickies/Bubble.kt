@@ -39,10 +39,8 @@ fun Bubble(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Box(modifier) {
-        Box(modifier = Modifier.align(Alignment.Center)) {
-            content()
-        }
+    Box(modifier, Alignment.Center) {
+        content()
         StickyBubble(
             visible,
             Modifier.align(Alignment.TopEnd)

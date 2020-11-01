@@ -25,12 +25,13 @@ fun Sticky(
     data: Sticky,
     modifier: Modifier = Modifier,
 ) {
-    Sticky(
-        text = data.title,
-        highlighted = data.highlighted,
-        color = data.color,
-        modifier = modifier,
-    )
+    Bubble(visible = data.highlighted) {
+        Sticky(
+            text = data.title,
+            color = data.color,
+            modifier = modifier,
+        )
+    }
 }
 
 @Composable
@@ -38,12 +39,9 @@ fun Sticky(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colors.surface,
-    highlighted: Boolean = false,
 ) {
-    Bubble(highlighted) {
-        Sticky(modifier, color) {
-            Text(text, textAlign = TextAlign.Center)
-        }
+    Sticky(modifier, color) {
+        Text(text, textAlign = TextAlign.Center)
     }
 }
 

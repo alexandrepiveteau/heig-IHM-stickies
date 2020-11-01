@@ -64,9 +64,9 @@ private fun StickyBubble(
     Box(
         modifier
             .drawLayer(scaleX = maxOf(scale, 0f), scaleY = maxOf(scale, 0f))
+            .size(56.dp)
             .background(Color.White, CircleShape)
             .border(8.dp, Color.Red, CircleShape)
-            .size(56.dp)
             .drawShadow(4.dp, CircleShape),
         alignment = Alignment.Center,
     ) {
@@ -83,7 +83,7 @@ private fun StickyBubble(
 @Preview
 private fun StickyBubblePreview() {
     MaterialTheme {
-        Surface(Modifier.fillMaxSize()) {
+        Surface(Modifier.fillMaxSize(), color = Color.Blue) {
             StickyBubble(visible = true)
         }
     }

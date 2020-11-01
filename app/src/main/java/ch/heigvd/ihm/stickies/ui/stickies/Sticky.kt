@@ -23,6 +23,7 @@ fun Sticky(
     Sticky(
         text = data.title,
         highlighted = data.highlighted,
+        color = data.color,
         modifier = modifier,
     )
 }

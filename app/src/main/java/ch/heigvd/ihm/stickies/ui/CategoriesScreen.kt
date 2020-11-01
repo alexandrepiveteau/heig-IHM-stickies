@@ -50,7 +50,6 @@ fun CategoriesScreen(
         val (oneOffset, setOneOffset) = remember { mutableStateOf(firstInitialOffset) }
         val (twoOffset, setTwoOffset) = remember { mutableStateOf(secondInitialOffset) }
 
-        Debug()
         FreeformPile(
             restOffset = oneRestOffset,
             stickies = ExamplePileA().value,
@@ -115,7 +114,7 @@ private inline fun FreeformPile(
                 onDragStarted = { setDragged(true) },
                 onDragOffset = { delta ->
                     setDragOffset(dragOffset + delta)
-                    onDrag(dragOffset + delta)
+                    onDrag(restOffset + dragOffset + delta)
                 },
                 onDragStopped = {
                     setDragged(false)

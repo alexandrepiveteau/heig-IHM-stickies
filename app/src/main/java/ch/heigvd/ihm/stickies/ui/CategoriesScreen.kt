@@ -88,6 +88,16 @@ private fun WithConstraintsScope.Debug() {
     }
 }
 
+// FREEFORM COMPOSABLES.
+
+/**
+ * A freeform pile of stickies, that is inlined at call site.
+ *
+ * @param stickies the [List] of all the stickies in the pile.
+ * @param restOffset the offset at which the items are displayed when not dragged.
+ * @param onDrag callback that returns the absolute offset of the pile when it is dragged.
+ * @param onDrop callback that is called when the pile is dropped.
+ */
 @Suppress("NOTHING_TO_INLINE")
 @Composable
 private inline fun FreeformPile(
@@ -135,8 +145,6 @@ private inline fun FreeformPile(
         }
     }
 }
-
-// FREEFORM COMPOSABLES.
 
 /**
  * A composable that can display a floating sticky.

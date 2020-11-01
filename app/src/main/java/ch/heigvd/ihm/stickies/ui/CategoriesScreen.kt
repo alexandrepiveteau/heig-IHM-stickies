@@ -20,10 +20,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.platform.HapticFeedBackAmbient
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.Bubble
 import ch.heigvd.ihm.stickies.ui.stickies.Sticky
+import ch.heigvd.ihm.stickies.ui.stickies.StickyDefaultElevation
+import ch.heigvd.ihm.stickies.ui.stickies.StickyRaisedElevation
 import kotlin.math.sign
 
 @Composable
@@ -173,17 +176,28 @@ private fun FreeformSticky(
         stiffness = StickyMaxStiffness - (stiffnessStep * pileIndex),
         visibilityThreshold = 0.01f,
     )
+    val dpSpring = spring(
+        dampingRatio = Spring.DampingRatioNoBouncy,
+        stiffness = StickyMaxStiffness,
+        visibilityThreshold = 0.1.dp,
+    )
     val scale = animate(if (dragged) 1.15f else 1.0f, spring)
+    val elevation = animate(
+        if (dragged) StickyRaisedElevation else StickyDefaultElevation,
+        dpSpring,
+    )
 
     Bubble(
         visible = bubbled,
         modifier
             .offsetPx(animate(offset.x, spring), animate(offset.y, spring))
             .drawLayer(scaleX = scale, scaleY = scale)
+            .zIndex(elevation.value)
     ) {
         Sticky(
             text = title,
             color = color,
+            elevation = elevation,
             modifier = Modifier
                 .longPressDragGestureFilter(object : LongPressDragObserver {
                     override fun onLongPress(pxPosition: Offset) {

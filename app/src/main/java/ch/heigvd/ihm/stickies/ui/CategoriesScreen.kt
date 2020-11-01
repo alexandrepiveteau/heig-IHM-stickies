@@ -7,11 +7,10 @@ import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.AmbientEmphasisLevels
 import androidx.compose.material.ProvideEmphasis
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.LongPressDragObserver
@@ -21,11 +20,14 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.platform.HapticFeedBackAmbient
 import androidx.compose.ui.unit.dp
+import ch.heigvd.ihm.stickies.model.Sticky
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.Bubble
 import ch.heigvd.ihm.stickies.ui.stickies.Sticky
 import ch.heigvd.ihm.stickies.ui.stickies.StickyDefaultElevation
 import ch.heigvd.ihm.stickies.ui.stickies.StickyRaisedElevation
+import ch.heigvd.ihm.stickies.util.fastForEachIndexedReversed
+import kotlinx.coroutines.flow.flow
 import kotlin.math.sign
 
 @Composable
@@ -35,7 +37,7 @@ fun CategoriesScreen(
     WithConstraints(modifier.fillMaxSize()) {
         val width = with(DensityAmbient.current) { maxWidth.toPx() }
         val height = with(DensityAmbient.current) { maxHeight.toPx() }
-        val size = with(DensityAmbient.current) { 256.dp.toPx() }
+        val size = with(DensityAmbient.current) { StickySize.toPx() }
         val spacerY = (height - (2 * size)) / 3
         val startY = (size - height) / 2
 
@@ -51,6 +53,7 @@ fun CategoriesScreen(
         Debug()
         FreeformPile(
             restOffset = oneRestOffset,
+            stickies = ExamplePileA().value,
             onDrag = setOneOffset,
             onDrop = {
                 if (sign(oneOffset.y) != sign(oneRestOffset.y)) {
@@ -61,6 +64,7 @@ fun CategoriesScreen(
         )
         FreeformPile(
             restOffset = twoRestOffset,
+            stickies = ExamplePileB().value,
             onDrag = setTwoOffset,
             onDrop = {
                 if (sign(twoOffset.y) != sign(twoRestOffset.y)) {
@@ -76,7 +80,7 @@ fun CategoriesScreen(
 private fun WithConstraintsScope.Debug() {
     val width = with(DensityAmbient.current) { maxWidth.toPx() }
     val height = with(DensityAmbient.current) { maxHeight.toPx() }
-    val size = with(DensityAmbient.current) { 256.dp.toPx() }
+    val size = with(DensityAmbient.current) { StickySize.toPx() }
     ProvideEmphasis(AmbientEmphasisLevels.current.disabled) {
         Column {
             Text("Size : $width x $height")
@@ -85,52 +89,52 @@ private fun WithConstraintsScope.Debug() {
     }
 }
 
+@Suppress("NOTHING_TO_INLINE")
 @Composable
 private inline fun FreeformPile(
+    stickies: List<Sticky>,
     restOffset: Offset,
-    crossinline onDrag: (absolute: Offset) -> Unit,
-    crossinline onDrop: () -> Unit,
+    noinline onDrag: (absolute: Offset) -> Unit,
+    noinline onDrop: () -> Unit,
 ) {
     val (dragged, setDragged) = remember { mutableStateOf(false) }
     val (dragOffset, setDragOffset) = remember { mutableStateOf(Offset.Zero) }
 
-    FreeformSticky(
-        bubbled = false,
-        dragged = dragged,
-        offset = restOffset + dragOffset,
-        title = "This is a test",
-        color = Color.StickiesPink,
-        pileIndex = 2,
-        pileSize = 3,
-    )
-    FreeformSticky(
-        bubbled = false,
-        dragged = dragged,
-        offset = restOffset + dragOffset,
-        title = "World",
-        color = Color.StickiesOrange,
-        pileIndex = 1,
-        pileSize = 3,
-    )
-    FreeformSticky(
-        bubbled = false,
-        dragged = dragged,
-        offset = restOffset + dragOffset,
-        title = "Hello",
-        color = Color.StickiesYellow,
-        pileIndex = 0,
-        pileSize = 3,
-        onDragStarted = { setDragged(true) },
-        onDragOffset = { delta ->
-            setDragOffset(dragOffset + delta)
-            onDrag(dragOffset + delta)
-        },
-        onDragStopped = {
-            setDragged(false)
-            setDragOffset(Offset.Zero)
-            onDrop()
-        },
-    )
+    val bubbled = remember(stickies) { stickies.any { it.highlighted } }
+
+    stickies.fastForEachIndexedReversed { index, sticky ->
+        if (index == 0) {
+            FreeformSticky(
+                bubbled = bubbled,
+                dragged = dragged,
+                offset = restOffset + dragOffset,
+                title = sticky.title,
+                color = sticky.color,
+                pileIndex = index,
+                pileSize = stickies.size,
+                onDragStarted = { setDragged(true) },
+                onDragOffset = { delta ->
+                    setDragOffset(dragOffset + delta)
+                    onDrag(dragOffset + delta)
+                },
+                onDragStopped = {
+                    setDragged(false)
+                    setDragOffset(Offset.Zero)
+                    onDrop()
+                },
+            )
+        } else {
+            FreeformSticky(
+                bubbled = false,
+                dragged = dragged,
+                offset = restOffset + dragOffset,
+                title = sticky.title,
+                color = sticky.color,
+                pileIndex = index,
+                pileSize = stickies.size
+            )
+        }
+    }
 }
 
 // FREEFORM COMPOSABLES.
@@ -189,6 +193,7 @@ private fun FreeformSticky(
     Bubble(
         visible = bubbled,
         modifier
+            .size(StickySize)
             .offsetPx(animate(offset.x, spring), animate(offset.y, spring))
             .drawLayer(scaleX = scale, scaleY = scale)
             .zIndex(elevation.value)
@@ -228,7 +233,46 @@ private fun FreeformSticky(
 private const val StickyMinStiffness = Spring.StiffnessVeryLow
 private const val StickyMaxStiffness = Spring.StiffnessLow
 
+// Stickies and layout metrics.
+private val StickySize = 256.dp
+
 // Angles and offsets applied to stickies, depending on their pile index.
 private val PileAngles = listOf(0f, 3f, 2f)
 private val PileOffsetX = listOf(0.dp, 4.dp, (-4).dp)
 private val PileOffsetY = listOf(0.dp, (-6).dp, (-6).dp)
+
+// TODO : REMOVE THIS EXAMPLE DATA
+
+@Composable
+fun ExamplePileA(): State<List<Sticky>> {
+    val flow = flow {
+        emit(
+            listOf(
+                Sticky(11, Color.StickiesYellow, "Take Medor to the vet", false),
+                Sticky(12, Color.StickiesOrange, "Buy some cat food", false)
+            )
+        )
+    }
+    val data = remember { flow }
+    return data.collectAsState(emptyList())
+}
+
+@Composable
+fun ExamplePileB(): State<List<Sticky>> {
+    val flow = flow {
+        var highlighted = false
+        while (true) {
+            emit(
+                listOf(
+                    Sticky(21, Color.StickiesPink, "Dentist at 10 am", highlighted),
+                    Sticky(22, Color.StickiesBlue, "Take some Aspirin", false),
+                    Sticky(23, Color.StickiesYellow, "Call my pharmacist", false)
+                )
+            )
+            kotlinx.coroutines.delay(5000)
+            highlighted = !highlighted
+        }
+    }
+    val data = remember { flow }
+    return data.collectAsState(emptyList())
+}

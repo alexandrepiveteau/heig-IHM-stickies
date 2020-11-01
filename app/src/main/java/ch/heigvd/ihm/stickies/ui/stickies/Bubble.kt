@@ -71,10 +71,10 @@ private fun StickyBubble(
     Box(
         modifier
             .drawLayer(scaleX = maxOf(scale, 0f), scaleY = maxOf(scale, 0f))
+            .drawShadow(4.dp, CircleShape)
             .size(56.dp)
             .background(Color.White, CircleShape)
-            .border(8.dp, Color.StickiesNicerRed, CircleShape)
-            .drawShadow(4.dp, CircleShape),
+            .border(8.dp, Color.StickiesNicerRed, CircleShape),
         alignment = Alignment.Center,
     ) {
         Text(

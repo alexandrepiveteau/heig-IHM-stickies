@@ -23,7 +23,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
 import ch.heigvd.ihm.stickies.ui.GochiHand
+import ch.heigvd.ihm.stickies.ui.StickiesNicerRed
 
+/**
+ * A slot-based Composable that decorates some content with an indicator bubble. The bubble will be
+ * animated with a spring.
+ *
+ * @param visible whether the [Bubble] is currently visible or not.
+ * @param modifier the modifier for the composable.
+ * @param content the slot content that has a bubble.
+ */
 @Composable
 fun Bubble(
     visible: Boolean,
@@ -66,7 +75,7 @@ private fun StickyBubble(
             .drawLayer(scaleX = maxOf(scale, 0f), scaleY = maxOf(scale, 0f))
             .size(56.dp)
             .background(Color.White, CircleShape)
-            .border(8.dp, Color.Red, CircleShape)
+            .border(8.dp, Color.StickiesNicerRed, CircleShape)
             .drawShadow(4.dp, CircleShape),
         alignment = Alignment.Center,
     ) {

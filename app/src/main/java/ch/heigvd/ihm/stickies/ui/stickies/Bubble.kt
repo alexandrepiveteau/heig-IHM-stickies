@@ -25,6 +25,14 @@ import androidx.ui.tooling.preview.Preview
 import ch.heigvd.ihm.stickies.ui.GochiHand
 import ch.heigvd.ihm.stickies.ui.StickiesNicerRed
 
+/**
+ * A slot-based Composable that decorates some content with an indicator bubble. The bubble will be
+ * animated with a spring.
+ *
+ * @param visible whether the [Bubble] is currently visible or not.
+ * @param modifier the modifier for the composable.
+ * @param content the slot content that has a bubble.
+ */
 @Composable
 fun Bubble(
     visible: Boolean,

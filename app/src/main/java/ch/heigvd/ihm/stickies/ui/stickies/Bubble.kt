@@ -1,4 +1,4 @@
-package ch.heigvd.ihm.stickies.stickies
+package ch.heigvd.ihm.stickies.ui.stickies
 
 import androidx.compose.animation.animate
 import androidx.compose.animation.core.Spring

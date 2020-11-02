@@ -139,6 +139,28 @@ fun Freeform(
         // Set the initial model.
         val (model, setModel) = remember { mutableStateOf(initialModel) }
 
+        // Render all the category placeholders.
+        model.categories.fastForEachIndexed { index, category ->
+            key(category) {
+                val color = animate(
+                    if (model.open != null) Color.StickiesFakeWhite
+                    else contentColorFor(color = MaterialTheme.colors.surface)
+                )
+                Placeholder(
+                    title = category.title,
+                    asset = vectorResource(id = category.icon),
+                    color = color,
+                    modifier = Modifier.offset(restOffset(
+                        index = index,
+                        origin = start,
+                        cellSize = stickySizeOffset,
+                        spacer = spacer,
+                    ))
+                )
+            }
+        }
+
+        // Render, for each category, all of the involved stickies.
         model.categories.fastForEachIndexed { index, category ->
             val rest = restOffset(
                 index,
@@ -150,19 +172,7 @@ fun Freeform(
 
             // TODO : Check if there's a way to do without key() if we're animating across screens.
             // TODO : Can we somehow inline some of this at the call site, to get nice animations ?
-            key(category) {
-                val color = animate(
-                    if (model.open != null) Color.StickiesFakeWhite
-                    else contentColorFor(color = MaterialTheme.colors.surface)
-                )
 
-                Placeholder(
-                    title = category.title,
-                    asset = vectorResource(id = category.icon),
-                    color = color,
-                    modifier = Modifier.offset(rest)
-                )
-            }
             key(category.stickies) {
                 val isSelfOpen = model.open == index
                 val hiddenOffset = hiddenOffset(

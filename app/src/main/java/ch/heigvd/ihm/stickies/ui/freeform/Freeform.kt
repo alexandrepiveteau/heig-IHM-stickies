@@ -22,14 +22,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.platform.HapticFeedBackAmbient
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import ch.heigvd.ihm.stickies.model.Sticky
+import ch.heigvd.ihm.stickies.ui.modifier.offset
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
-import ch.heigvd.ihm.stickies.ui.stickies.Bubble
-import ch.heigvd.ihm.stickies.ui.stickies.Sticky
-import ch.heigvd.ihm.stickies.ui.stickies.StickyDefaultElevation
-import ch.heigvd.ihm.stickies.ui.stickies.StickyRaisedElevation
+import ch.heigvd.ihm.stickies.ui.stickies.*
 import ch.heigvd.ihm.stickies.util.fastForEachIndexedReversed
 
 /**
@@ -111,7 +110,7 @@ fun Freeform(
         // Set the initial model.
         val (model, setModel) = remember { mutableStateOf(initialModel) }
 
-        model.piles.fastForEachIndexed { index, pile ->
+        model.categories.fastForEachIndexed { index, category ->
             val rest = restOffset(
                 index,
                 origin = start,
@@ -121,9 +120,21 @@ fun Freeform(
             val (offset, setOffset) = remember { mutableStateOf(rest) }
 
             // TODO : Check if there's a way to do without key() if we're animating across screens.
-            key(pile) {
+            key(category) {
+                Placeholder(
+                    title = category.title,
+                    asset = vectorResource(id = category.icon),
+                    Modifier.offset(
+                        rest + Offset(
+                            x = (width - stickySize) / 2,
+                            y = (height - stickySize) / 2
+                        )
+                    )
+                )
+            }
+            key(category.stickies) {
                 FreeformPile(
-                    stickies = pile,
+                    stickies = category.stickies,
                     restOffset = rest,
                     onDrag = setOffset,
                     onDrop = {

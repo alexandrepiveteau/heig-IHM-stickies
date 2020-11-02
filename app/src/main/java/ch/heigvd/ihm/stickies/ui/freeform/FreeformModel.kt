@@ -1,14 +1,22 @@
 package ch.heigvd.ihm.stickies.ui.freeform
 
+import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
+import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.model.Sticky
 import ch.heigvd.ihm.stickies.ui.StickiesBlue
 import ch.heigvd.ihm.stickies.ui.StickiesOrange
 import ch.heigvd.ihm.stickies.ui.StickiesPink
 import ch.heigvd.ihm.stickies.ui.StickiesYellow
 
+data class FreeformCategory(
+    val title: String,
+    @DrawableRes val icon: Int,
+    val stickies: List<Sticky>,
+)
+
 data class FreeformModel(
-    val piles: List<List<Sticky>>,
+    val categories: List<FreeformCategory>,
 ) {
 
     /**
@@ -21,12 +29,15 @@ data class FreeformModel(
      * @return the new [FreeformModel].
      */
     fun swap(first: Int, second: Int): FreeformModel {
-        val mutable = piles.toMutableList()
-        val a = mutable[first]
-        val b = mutable[second]
-        mutable[first] = b
-        mutable[second] = a
-        return FreeformModel(mutable)
+        val a = categories[first].stickies
+        val b = categories[second].stickies
+        val catA = categories[first].copy(stickies = b)
+        val catB = categories[second].copy(stickies = a)
+        val list = categories.toMutableList().apply {
+            set(first, catA)
+            set(second, catB)
+        }
+        return FreeformModel(list)
     }
 }
 
@@ -69,7 +80,35 @@ val ExamplePileF: List<Sticky> = listOf(
 
 val initialModel = FreeformModel(
     listOf(
-        ExamplePileA, ExamplePileB, ExamplePileC,
-        ExamplePileD, ExamplePileE, ExamplePileF,
+        FreeformCategory(
+            title = "Inbox",
+            icon = R.drawable.ic_category_inbox,
+            stickies = ExamplePileA,
+        ),
+        FreeformCategory(
+            title = "Groceries",
+            icon = R.drawable.ic_category_inbox,
+            stickies = ExamplePileB,
+        ),
+        FreeformCategory(
+            title = "Medical Stuff",
+            icon = R.drawable.ic_category_inbox,
+            stickies = ExamplePileC,
+        ),
+        FreeformCategory(
+            title = "Appointments",
+            icon = R.drawable.ic_category_inbox,
+            stickies = ExamplePileD,
+        ),
+        FreeformCategory(
+            title = "Exercise",
+            icon = R.drawable.ic_category_inbox,
+            stickies = ExamplePileE,
+        ),
+        FreeformCategory(
+            title = "Medor",
+            icon = R.drawable.ic_category_inbox,
+            stickies = ExamplePileF,
+        ),
     )
 )

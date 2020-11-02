@@ -4,6 +4,7 @@ import androidx.compose.animation.animate
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -26,6 +27,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import ch.heigvd.ihm.stickies.model.Sticky
+import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
 import ch.heigvd.ihm.stickies.ui.modifier.offset
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.*
@@ -88,7 +90,11 @@ private inline fun dropIndex(
 fun Freeform(
     modifier: Modifier = Modifier,
 ) {
-    WithConstraints(modifier.fillMaxSize()) {
+    WithConstraints(
+        modifier
+            .background(Color.StickiesFakeWhite)
+            .fillMaxSize(),
+    ) {
         val width = with(DensityAmbient.current) { maxWidth.toPx() }
         val height = with(DensityAmbient.current) { maxHeight.toPx() }
         val size = Offset(x = width, y = height)

@@ -62,7 +62,7 @@ fun Sticky(
     content: @Composable () -> Unit
 ) {
     Surface(
-        modifier = modifier.preferredSize(256.dp),
+        modifier = modifier.preferredSize(StickySize),
         color = color,
         shape = RoundedCornerShape(8.dp),
         elevation = elevation,
@@ -80,3 +80,5 @@ fun Sticky(
 
 val StickyDefaultElevation = 4.dp
 val StickyRaisedElevation = 8.dp
+
+val StickySize = 312.dp

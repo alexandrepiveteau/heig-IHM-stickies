@@ -317,9 +317,6 @@ private fun FreeformSticky(
 private const val StickyMinStiffness = Spring.StiffnessVeryLow
 private const val StickyMaxStiffness = Spring.StiffnessLow
 
-// Stickies and layout metrics.
-private val StickySize = 256.dp
-
 // Angles and offsets applied to stickies, depending on their pile index.
 private val PileAngles = listOf(0f, 3f, 2f)
 private val PileOffsetX = listOf(0.dp, 4.dp, (-4).dp)

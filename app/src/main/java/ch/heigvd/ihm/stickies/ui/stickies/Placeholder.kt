@@ -47,7 +47,7 @@ fun Placeholder(
         Box(
             modifier = modifier
                 .border(4.dp, color, RoundedCornerShape(32.dp))
-                .size(256.dp),
+                .size(StickySize),
             alignment = Alignment.Center,
         ) {
             Column(

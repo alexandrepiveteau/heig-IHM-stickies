@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.flow
 import kotlin.math.sign
 
 @Composable
-fun CategoriesScreen(
+fun Freeform(
     modifier: Modifier = Modifier,
 ) {
     WithConstraints(modifier.fillMaxSize()) {

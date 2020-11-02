@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
 import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.ui.Archivo
+import ch.heigvd.ihm.stickies.ui.modifier.aboveOffset
 
 private val HintTextStyle = TextStyle(
     fontFamily = Archivo,
@@ -42,34 +43,41 @@ fun Placeholder(
 ) {
     // TODO : Use context-provided instead.
     val color = Color.Black.copy(alpha = 0.2f)
+    val border = Color.Black.copy(alpha = 0.1f)
     Providers(AmbientContentColor provides color) {
-        Column(modifier) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Spacer(Modifier.preferredWidth(8.dp))
-                Icon(asset, Modifier.preferredSize(24.dp))
-                Spacer(Modifier.preferredWidth(8.dp))
-                Text(title, style = HintTextStyle)
-            }
-            Spacer(Modifier.preferredHeight(8.dp))
-            Box(
-                modifier = Modifier
-                    .border(4.dp, AmbientContentColor.current, RoundedCornerShape(32.dp))
-                    .preferredSize(256.dp),
-                alignment = Alignment.Center,
+        Box(
+            modifier = modifier
+                .border(4.dp, border, RoundedCornerShape(32.dp))
+                .size(256.dp),
+            alignment = Alignment.Center,
+        ) {
+            Column(
+                Modifier
+                    .align(Alignment.TopStart)
+                    .aboveOffset()
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        asset, Modifier
-                            .preferredSize(64.dp)
-                            .drawLayer(
-                                scaleX = 3f,
-                                scaleY = 3f,
-                                transformOrigin = TransformOrigin.Center,
-                            )
-                    )
-                    Spacer(Modifier.preferredHeight(8.dp))
-                    Text(title, style = ContentTextStyle)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Spacer(Modifier.preferredWidth(8.dp))
+                    Icon(asset, Modifier.preferredSize(24.dp))
+                    Spacer(Modifier.preferredWidth(8.dp))
+                    Text(title, style = HintTextStyle)
                 }
+                Spacer(Modifier.height(16.dp))
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    asset, Modifier
+                        .preferredSize(64.dp)
+                        .drawLayer(
+                            scaleX = 3f,
+                            scaleY = 3f,
+                            transformOrigin = TransformOrigin.Center,
+                        )
+                )
+                Spacer(Modifier.preferredHeight(8.dp))
+                Text(title, style = ContentTextStyle)
             }
         }
     }

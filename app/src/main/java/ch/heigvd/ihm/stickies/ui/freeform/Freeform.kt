@@ -130,12 +130,7 @@ fun Freeform(
                 Placeholder(
                     title = category.title,
                     asset = vectorResource(id = category.icon),
-                    Modifier.offset(
-                        rest + Offset(
-                            x = (width - stickySize) / 2,
-                            y = (height - stickySize) / 2
-                        )
-                    )
+                    Modifier.offset(rest)
                 )
             }
             key(category.stickies) {

@@ -20,6 +20,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.platform.HapticFeedBackAmbient
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEachIndexed
 import ch.heigvd.ihm.stickies.model.Sticky
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.Bubble
@@ -27,8 +28,59 @@ import ch.heigvd.ihm.stickies.ui.stickies.Sticky
 import ch.heigvd.ihm.stickies.ui.stickies.StickyDefaultElevation
 import ch.heigvd.ihm.stickies.ui.stickies.StickyRaisedElevation
 import ch.heigvd.ihm.stickies.util.fastForEachIndexedReversed
-import kotlinx.coroutines.flow.flow
-import kotlin.math.sign
+
+/**
+ * Calculates the offset at which an item at a certain index should be positioned to be at rest.
+ *
+ * @param index the index for which we want the rest offset.
+ * @param origin the origin of the plane in which items are dropped.
+ * @param cellSize the dimensions of a cell that is displayed.
+ * @param spacer the spacer applied between items.
+ *
+ * @return the [Offset] at which the item should be put at rest.
+ */
+@Suppress("NOTHING_TO_INLINE")
+private inline fun restOffset(
+    index: Int,
+    origin: Offset,
+    cellSize: Offset,
+    spacer: Offset,
+): Offset {
+    val horizontalCount = index % GridHorizontalCellCount
+    val verticalCount = (index - horizontalCount) / GridVerticalCellCount
+    // Items have at least one "unit" of spacer at the top left.
+    return origin + Offset(
+        spacer.x + (horizontalCount * (spacer.x + cellSize.x)),
+        spacer.y + (verticalCount * (spacer.y + cellSize.y)),
+    )
+}
+
+/**
+ * Calculates the drop index of a document, depending on the grid dimensions.
+ *
+ * @param position the [Offset] at which the item is dropped.
+ * @param origin the origin of the plane in which items are dropped.
+ * @param size the size of the pane in which the items are dropped.
+ *
+ * @return the index of the drop position.
+ */
+@Suppress("NOTHING_TO_INLINE")
+private inline fun dropIndex(
+    position: Offset,
+    origin: Offset,
+    size: Offset,
+): Int {
+    // TODO : This implementation completely ignores the spacings. Maybe this is something we'll
+    //        actually want to take into account.
+    val delta = position - origin
+    val horizontal = size.x / GridHorizontalCellCount
+    val vertical = size.y / GridVerticalCellCount
+
+    val horizontalCount = (delta.x / horizontal).toInt()
+    val verticalCount = (delta.y / vertical).toInt()
+
+    return GridHorizontalCellCount * verticalCount + horizontalCount
+}
 
 @Composable
 fun Freeform(
@@ -37,41 +89,63 @@ fun Freeform(
     WithConstraints(modifier.fillMaxSize()) {
         val width = with(DensityAmbient.current) { maxWidth.toPx() }
         val height = with(DensityAmbient.current) { maxHeight.toPx() }
-        val size = with(DensityAmbient.current) { StickySize.toPx() }
-        val spacerY = (height - (2 * size)) / 3
-        val startY = (size - height) / 2
+        val size = Offset(x = width, y = height)
+        val stickySize = with(DensityAmbient.current) { StickySize.toPx() }
+        val stickySizeOffset = Offset(stickySize, stickySize)
 
-        val firstInitialOffset = Offset(x = 0f, y = startY + spacerY)
-        val secondInitialOffset = Offset(x = 0f, y = startY + spacerY + size + spacerY)
+        // Paddings to be respected between the grid elements.
+        val spacerX = (width - (GridHorizontalCellCount * stickySize)) /
+                (GridHorizontalCellCount + 1)
+        val spacerY = (height - (GridVerticalCellCount * stickySize)) /
+                (GridVerticalCellCount + 1)
+        val spacer = Offset(x = spacerX, y = spacerY)
 
-        val (oneRestOffset, setOneRestOffset) = remember { mutableStateOf(firstInitialOffset) }
-        val (twoRestOffset, setTwoRestOffset) = remember { mutableStateOf(secondInitialOffset) }
+        // Initial offset to apply to the elements to start at the top start corner.
+        val startX = (stickySize - width) / 2
+        val startY = (stickySize - height) / 2
+        val start = Offset(x = startX, y = startY)
 
-        val (oneOffset, setOneOffset) = remember { mutableStateOf(firstInitialOffset) }
-        val (twoOffset, setTwoOffset) = remember { mutableStateOf(secondInitialOffset) }
+        // Set the initial model.
+        val (model, setModel) = remember {
+            mutableStateOf(
+                listOf(
+                    ExamplePileA, ExamplePileB, ExamplePileC,
+                    ExamplePileD, ExamplePileE, ExamplePileF,
+                )
+            )
+        }
 
-        FreeformPile(
-            restOffset = oneRestOffset,
-            stickies = ExamplePileA().value,
-            onDrag = setOneOffset,
-            onDrop = {
-                if (sign(oneOffset.y) != sign(oneRestOffset.y)) {
-                    setOneRestOffset(twoRestOffset)
-                    setTwoRestOffset(oneRestOffset)
-                }
-            },
-        )
-        FreeformPile(
-            restOffset = twoRestOffset,
-            stickies = ExamplePileB().value,
-            onDrag = setTwoOffset,
-            onDrop = {
-                if (sign(twoOffset.y) != sign(twoRestOffset.y)) {
-                    setOneRestOffset(twoRestOffset)
-                    setTwoRestOffset(oneRestOffset)
-                }
-            },
-        )
+        model.fastForEachIndexed { index, pile ->
+            val rest = restOffset(
+                index,
+                origin = start,
+                cellSize = stickySizeOffset,
+                spacer = spacer,
+            )
+            val (offset, setOffset) = remember { mutableStateOf(rest) }
+
+            // TODO : Check if there's a way to do without key() if we're animating across screens.
+            key(pile) {
+                FreeformPile(
+                    stickies = pile,
+                    restOffset = rest,
+                    onDrag = setOffset,
+                    onDrop = {
+                        val droppedAt = dropIndex(offset, start, size)
+
+                        // Re-arrange piles.
+                        val mutable = model.toMutableList()
+                        val a = mutable[index]
+                        val b = mutable[droppedAt]
+                        mutable[droppedAt] = a
+                        mutable[index] = b
+
+                        // Cascade our model update.
+                        setModel(mutable)
+                    },
+                )
+            }
+        }
     }
 }
 
@@ -250,38 +324,43 @@ private val PileAngles = listOf(0f, 3f, 2f)
 private val PileOffsetX = listOf(0.dp, 4.dp, (-4).dp)
 private val PileOffsetY = listOf(0.dp, (-6).dp, (-6).dp)
 
+// Grid dimensions.
+private const val GridHorizontalCellCount = 3
+private const val GridVerticalCellCount = 2
+
 // TODO : REMOVE THIS EXAMPLE DATA
 
-@Composable
-fun ExamplePileA(): State<List<Sticky>> {
-    val flow = flow {
-        emit(
-            listOf(
-                Sticky(11, Color.StickiesYellow, "Take Medor to the vet", false),
-                Sticky(12, Color.StickiesOrange, "Buy some cat food", false)
-            )
-        )
-    }
-    val data = remember { flow }
-    return data.collectAsState(emptyList())
-}
+val ExamplePileA: List<Sticky> = listOf(
+    Sticky(11, Color.StickiesYellow, "Take Medor to the vet", false),
+    Sticky(12, Color.StickiesOrange, "Buy some cat food", false)
+)
 
-@Composable
-fun ExamplePileB(): State<List<Sticky>> {
-    val flow = flow {
-        var highlighted = false
-        while (true) {
-            emit(
-                listOf(
-                    Sticky(21, Color.StickiesPink, "Dentist at 10 am", highlighted),
-                    Sticky(22, Color.StickiesBlue, "Take some Aspirin", false),
-                    Sticky(23, Color.StickiesYellow, "Call my pharmacist", false)
-                )
-            )
-            kotlinx.coroutines.delay(5000)
-            highlighted = !highlighted
-        }
-    }
-    val data = remember { flow }
-    return data.collectAsState(emptyList())
-}
+val ExamplePileB: List<Sticky> = listOf(
+    Sticky(21, Color.StickiesPink, "Dentist at 10 am", true),
+    Sticky(22, Color.StickiesBlue, "Take some Aspirin", false),
+    Sticky(23, Color.StickiesYellow, "Call my pharmacist", false)
+)
+
+val ExamplePileC: List<Sticky> = listOf(
+    Sticky(31, Color.StickiesPink, "Dentist at 10 am", true),
+    Sticky(32, Color.StickiesBlue, "Take some Aspirin", false),
+    Sticky(33, Color.StickiesYellow, "Call my pharmacist", false)
+)
+
+val ExamplePileD: List<Sticky> = listOf(
+    Sticky(41, Color.StickiesPink, "Dentist at 10 am", true),
+    Sticky(42, Color.StickiesBlue, "Take some Aspirin", false),
+    Sticky(43, Color.StickiesYellow, "Call my pharmacist", false)
+)
+
+val ExamplePileE: List<Sticky> = listOf(
+    Sticky(51, Color.StickiesPink, "Dentist at 10 am", true),
+    Sticky(52, Color.StickiesBlue, "Take some Aspirin", false),
+    Sticky(53, Color.StickiesYellow, "Call my pharmacist", false)
+)
+
+val ExamplePileF: List<Sticky> = listOf(
+    Sticky(61, Color.StickiesPink, "Dentist at 10 am", true),
+    Sticky(62, Color.StickiesBlue, "Take some Aspirin", false),
+    Sticky(63, Color.StickiesYellow, "Call my pharmacist", false)
+)

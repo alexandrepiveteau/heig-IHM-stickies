@@ -1,16 +1,20 @@
-package ch.heigvd.ihm.stickies.ui
+package ch.heigvd.ihm.stickies.ui.freeform
 
 import androidx.compose.animation.animate
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.AmbientEmphasisLevels
 import androidx.compose.material.ProvideEmphasis
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.LongPressDragObserver
@@ -19,14 +23,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.platform.HapticFeedBackAmbient
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import ch.heigvd.ihm.stickies.model.Sticky
+import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
+import ch.heigvd.ihm.stickies.ui.modifier.offset
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
-import ch.heigvd.ihm.stickies.ui.stickies.Bubble
-import ch.heigvd.ihm.stickies.ui.stickies.Sticky
-import ch.heigvd.ihm.stickies.ui.stickies.StickyDefaultElevation
-import ch.heigvd.ihm.stickies.ui.stickies.StickyRaisedElevation
+import ch.heigvd.ihm.stickies.ui.stickies.*
 import ch.heigvd.ihm.stickies.util.fastForEachIndexedReversed
 
 /**
@@ -86,7 +90,11 @@ private inline fun dropIndex(
 fun Freeform(
     modifier: Modifier = Modifier,
 ) {
-    WithConstraints(modifier.fillMaxSize()) {
+    WithConstraints(
+        modifier
+            .background(Color.StickiesFakeWhite)
+            .fillMaxSize(),
+    ) {
         val width = with(DensityAmbient.current) { maxWidth.toPx() }
         val height = with(DensityAmbient.current) { maxHeight.toPx() }
         val size = Offset(x = width, y = height)
@@ -106,16 +114,9 @@ fun Freeform(
         val start = Offset(x = startX, y = startY)
 
         // Set the initial model.
-        val (model, setModel) = remember {
-            mutableStateOf(
-                listOf(
-                    ExamplePileA, ExamplePileB, ExamplePileC,
-                    ExamplePileD, ExamplePileE, ExamplePileF,
-                )
-            )
-        }
+        val (model, setModel) = remember { mutableStateOf(initialModel) }
 
-        model.fastForEachIndexed { index, pile ->
+        model.categories.fastForEachIndexed { index, category ->
             val rest = restOffset(
                 index,
                 origin = start,
@@ -125,23 +126,23 @@ fun Freeform(
             val (offset, setOffset) = remember { mutableStateOf(rest) }
 
             // TODO : Check if there's a way to do without key() if we're animating across screens.
-            key(pile) {
+            key(category) {
+                Placeholder(
+                    title = category.title,
+                    asset = vectorResource(id = category.icon),
+                    Modifier.offset(rest)
+                )
+            }
+            key(category.stickies) {
                 FreeformPile(
-                    stickies = pile,
+                    stickies = category.stickies,
                     restOffset = rest,
                     onDrag = setOffset,
                     onDrop = {
                         val droppedAt = dropIndex(offset, start, size)
 
-                        // Re-arrange piles.
-                        val mutable = model.toMutableList()
-                        val a = mutable[index]
-                        val b = mutable[droppedAt]
-                        mutable[droppedAt] = a
-                        mutable[index] = b
-
                         // Cascade our model update.
-                        setModel(mutable)
+                        setModel(model.swap(droppedAt, index))
                     },
                 )
             }
@@ -316,9 +317,6 @@ private fun FreeformSticky(
 private const val StickyMinStiffness = Spring.StiffnessVeryLow
 private const val StickyMaxStiffness = Spring.StiffnessLow
 
-// Stickies and layout metrics.
-private val StickySize = 256.dp
-
 // Angles and offsets applied to stickies, depending on their pile index.
 private val PileAngles = listOf(0f, 3f, 2f)
 private val PileOffsetX = listOf(0.dp, 4.dp, (-4).dp)
@@ -327,40 +325,3 @@ private val PileOffsetY = listOf(0.dp, (-6).dp, (-6).dp)
 // Grid dimensions.
 private const val GridHorizontalCellCount = 3
 private const val GridVerticalCellCount = 2
-
-// TODO : REMOVE THIS EXAMPLE DATA
-
-val ExamplePileA: List<Sticky> = listOf(
-    Sticky(11, Color.StickiesYellow, "Take Medor to the vet", false),
-    Sticky(12, Color.StickiesOrange, "Buy some cat food", false)
-)
-
-val ExamplePileB: List<Sticky> = listOf(
-    Sticky(21, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(22, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(23, Color.StickiesYellow, "Call my pharmacist", false)
-)
-
-val ExamplePileC: List<Sticky> = listOf(
-    Sticky(31, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(32, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(33, Color.StickiesYellow, "Call my pharmacist", false)
-)
-
-val ExamplePileD: List<Sticky> = listOf(
-    Sticky(41, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(42, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(43, Color.StickiesYellow, "Call my pharmacist", false)
-)
-
-val ExamplePileE: List<Sticky> = listOf(
-    Sticky(51, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(52, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(53, Color.StickiesYellow, "Call my pharmacist", false)
-)
-
-val ExamplePileF: List<Sticky> = listOf(
-    Sticky(61, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(62, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(63, Color.StickiesYellow, "Call my pharmacist", false)
-)

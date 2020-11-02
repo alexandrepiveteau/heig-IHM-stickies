@@ -3,14 +3,13 @@ package ch.heigvd.ihm.stickies.ui.freeform
 import androidx.compose.animation.animate
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.AmbientEmphasisLevels
-import androidx.compose.material.ProvideEmphasis
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -126,17 +125,26 @@ fun Freeform(
             val (offset, setOffset) = remember { mutableStateOf(rest) }
 
             // TODO : Check if there's a way to do without key() if we're animating across screens.
+            // TODO : Can we somehow inline some of this at the call site, to get nice animations ?
             key(category) {
+                val color = animate(
+                    if (model.open != null) Color.StickiesFakeWhite
+                    else contentColorFor(color = MaterialTheme.colors.surface)
+                )
+
                 Placeholder(
                     title = category.title,
                     asset = vectorResource(id = category.icon),
-                    Modifier.offset(rest)
+                    color = color,
+                    modifier = Modifier.offset(rest)
                 )
             }
             key(category.stickies) {
+                val isSelfOpen = model.open == index
                 FreeformPile(
                     stickies = category.stickies,
                     restOffset = rest,
+                    open = isSelfOpen,
                     onDrag = setOffset,
                     onDrop = {
                         val droppedAt = dropIndex(offset, start, size)
@@ -144,21 +152,15 @@ fun Freeform(
                         // Cascade our model update.
                         setModel(model.swap(droppedAt, index))
                     },
+                    onClick = { _ ->
+                        if (isSelfOpen) {
+                            setModel(model.copy(open = null))
+                        } else {
+                            setModel(model.copy(open = index))
+                        }
+                    },
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun WithConstraintsScope.Debug() {
-    val width = with(DensityAmbient.current) { maxWidth.toPx() }
-    val height = with(DensityAmbient.current) { maxHeight.toPx() }
-    val size = with(DensityAmbient.current) { StickySize.toPx() }
-    ProvideEmphasis(AmbientEmphasisLevels.current.disabled) {
-        Column {
-            Text("Size : $width x $height")
-            Text("Sticky size : $size x $size")
         }
     }
 }
@@ -172,14 +174,17 @@ private fun WithConstraintsScope.Debug() {
  * @param restOffset the offset at which the items are displayed when not dragged.
  * @param onDrag callback that returns the absolute offset of the pile when it is dragged.
  * @param onDrop callback that is called when the pile is dropped.
+ * @param onClick callback that is called when a sticky is clicked.
  */
 @Suppress("NOTHING_TO_INLINE")
 @Composable
 private inline fun FreeformPile(
     stickies: List<Sticky>,
+    open: Boolean,
     restOffset: Offset,
     noinline onDrag: (absolute: Offset) -> Unit,
     noinline onDrop: () -> Unit,
+    noinline onClick: (Sticky) -> Unit,
 ) {
     val (dragged, setDragged) = remember { mutableStateOf(false) }
     val (dragOffset, setDragOffset) = remember { mutableStateOf(Offset.Zero) }
@@ -207,6 +212,7 @@ private inline fun FreeformPile(
                         setDragOffset(Offset.Zero)
                         onDrop()
                     },
+                    onClick = { onClick(sticky) },
                 )
             } else {
                 FreeformSticky(
@@ -216,7 +222,8 @@ private inline fun FreeformPile(
                     title = sticky.title,
                     color = sticky.color,
                     pileIndex = index,
-                    pileSize = stickies.size
+                    pileSize = stickies.size,
+                    onClick = { onClick(sticky) },
                 )
             }
         }
@@ -236,6 +243,7 @@ private inline fun FreeformPile(
  * @param onDragStarted called when a drag gesture starts on the sticky.
  * @param onDragOffset called when a drag gesture moves on the sticky.
  * @param onDragStopped called when a drag gesture stops on the sticky.
+ * @param onClick called when this sticky is clicked.
  * @param modifier the [Modifier] for this composable.
  */
 @Composable
@@ -251,6 +259,7 @@ private fun FreeformSticky(
     onDragStarted: () -> Unit = {},
     onDragOffset: (Offset) -> Unit = {},
     onDragStopped: (speed: Offset) -> Unit = {},
+    onClick: () -> Unit,
 ) {
     val haptic = HapticFeedBackAmbient.current
     val stiffnessStep = if (pileSize > 1) {
@@ -287,6 +296,8 @@ private fun FreeformSticky(
             color = color,
             elevation = elevation,
             modifier = Modifier
+                // TODO : Make this an attribute of Sticky.
+                .clickable(onClick = onClick, indication = null)
                 .longPressDragGestureFilter(object : LongPressDragObserver {
                     override fun onLongPress(pxPosition: Offset) {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)

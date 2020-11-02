@@ -14,7 +14,14 @@ data class FreeformCategory(
 
 data class FreeformModel(
     val categories: List<FreeformCategory>,
+    val open: Int?,
 ) {
+
+    /**
+     * Returns true if a certain category is currently open.
+     */
+    val isOpen: Boolean
+        get() = open != null
 
     /**
      * Swaps two piles with indices [first] and [second]. If the indices are identical (and within
@@ -34,7 +41,7 @@ data class FreeformModel(
             set(first, catA)
             set(second, catB)
         }
-        return FreeformModel(list)
+        return copy(categories = list)
     }
 }
 
@@ -50,7 +57,12 @@ val ExamplePileB: List<Sticky> = listOf(
 )
 
 val ExamplePileC: List<Sticky> = listOf(
-    Sticky(31, Color.StickiesOrange, "Take all my pills for the day :\n\n-Aspirin\n-Lotensin", true),
+    Sticky(
+        31,
+        Color.StickiesOrange,
+        "Take all my pills for the day :\n\n-Aspirin\n-Lotensin",
+        true
+    ),
 )
 
 val ExamplePileD: List<Sticky> = listOf(
@@ -70,7 +82,7 @@ val ExamplePileF: List<Sticky> = listOf(
 )
 
 val initialModel = FreeformModel(
-    listOf(
+    categories = listOf(
         FreeformCategory(
             title = "Inbox",
             icon = R.drawable.ic_category_inbox,
@@ -101,5 +113,6 @@ val initialModel = FreeformModel(
             icon = R.drawable.ic_category_bone,
             stickies = ExamplePileF,
         ),
-    )
+    ),
+    open = null,
 )

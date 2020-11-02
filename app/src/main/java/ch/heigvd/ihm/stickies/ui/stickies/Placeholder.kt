@@ -40,13 +40,13 @@ fun Placeholder(
     title: String,
     asset: VectorAsset,
     modifier: Modifier = Modifier,
+    color: Color = contentColorFor(MaterialTheme.colors.surface),
 ) {
-    // TODO : Use context-provided instead.
-    val color = Color.Black.copy(alpha = 0.2f)
-    Providers(AmbientContentColor provides color) {
+    val ambient = color.copy(alpha = 0.2f)
+    Providers(AmbientContentColor provides ambient) {
         Box(
             modifier = modifier
-                .border(4.dp, color, RoundedCornerShape(32.dp))
+                .border(4.dp, AmbientContentColor.current, RoundedCornerShape(32.dp))
                 .size(StickySize),
             alignment = Alignment.Center,
         ) {

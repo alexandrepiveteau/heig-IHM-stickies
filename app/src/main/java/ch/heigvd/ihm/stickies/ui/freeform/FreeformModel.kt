@@ -4,10 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
 import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.model.Sticky
-import ch.heigvd.ihm.stickies.ui.StickiesBlue
-import ch.heigvd.ihm.stickies.ui.StickiesOrange
-import ch.heigvd.ihm.stickies.ui.StickiesPink
-import ch.heigvd.ihm.stickies.ui.StickiesYellow
+import ch.heigvd.ihm.stickies.ui.*
 
 data class FreeformCategory(
     val title: String,
@@ -43,39 +40,33 @@ data class FreeformModel(
 
 // TODO : REMOVE THIS EXAMPLE DATA
 
-val ExamplePileA: List<Sticky> = listOf(
-    Sticky(11, Color.StickiesYellow, "Take Medor to the vet", false),
-    Sticky(12, Color.StickiesOrange, "Buy some cat food", false)
-)
+val ExamplePileA: List<Sticky> = emptyList()
 
 val ExamplePileB: List<Sticky> = listOf(
-    Sticky(21, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(22, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(23, Color.StickiesYellow, "Call my pharmacist", false)
+    Sticky(21, Color.StickiesYellow, "Buy some bread\n\n-Whole grain\n-Without raisins", true),
+    Sticky(22, Color.StickiesBlue, "", false),
+    Sticky(23, Color.StickiesPink, "", false),
+    Sticky(24, Color.StickiesOrange, "", false)
 )
 
 val ExamplePileC: List<Sticky> = listOf(
-    Sticky(31, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(32, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(33, Color.StickiesYellow, "Call my pharmacist", false)
+    Sticky(31, Color.StickiesOrange, "Take all my pills for the day :\n\n-Aspirin\n-Lotensin", true),
 )
 
 val ExamplePileD: List<Sticky> = listOf(
-    Sticky(41, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(42, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(43, Color.StickiesYellow, "Call my pharmacist", false)
+    Sticky(41, Color.StickiesOrange, "Dentist at 10 am", true),
+    Sticky(42, Color.StickiesBlue, "", false),
+    Sticky(43, Color.StickiesYellow, "", false),
 )
 
 val ExamplePileE: List<Sticky> = listOf(
-    Sticky(51, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(52, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(53, Color.StickiesYellow, "Call my pharmacist", false)
+    Sticky(51, Color.StickiesGreen, "Walk around the block\n(use a face mask)", false),
 )
 
 val ExamplePileF: List<Sticky> = listOf(
-    Sticky(61, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(62, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(63, Color.StickiesYellow, "Call my pharmacist", false)
+    Sticky(61, Color.StickiesYellow, "Take Medor to the vet", true),
+    Sticky(62, Color.StickiesBlue, "", false),
+    Sticky(63, Color.StickiesPink, "", false)
 )
 
 val initialModel = FreeformModel(

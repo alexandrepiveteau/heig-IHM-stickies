@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Color
 val Color.Companion.StickiesFakeWhite: Color get() = Color(0xFFF6F6F6)
 
 val Color.Companion.StickiesNicerRed: Color get() = Color(0xFFF27474)
+
+val Color.Companion.StickiesGreen : Color get() = Color(0xFFEBFFD1)
 val Color.Companion.StickiesBlue: Color get() = Color(0xFFD4F1EA)
 val Color.Companion.StickiesPink: Color get() = Color(0xFFFFDDF8)
 val Color.Companion.StickiesYellow: Color get() = Color(0xFFFFFFD1)

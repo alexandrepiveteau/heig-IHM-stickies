@@ -87,27 +87,27 @@ val initialModel = FreeformModel(
         ),
         FreeformCategory(
             title = "Groceries",
-            icon = R.drawable.ic_category_inbox,
+            icon = R.drawable.ic_category_basket,
             stickies = ExamplePileB,
         ),
         FreeformCategory(
             title = "Medical Stuff",
-            icon = R.drawable.ic_category_inbox,
+            icon = R.drawable.ic_category_medical,
             stickies = ExamplePileC,
         ),
         FreeformCategory(
             title = "Appointments",
-            icon = R.drawable.ic_category_inbox,
+            icon = R.drawable.ic_category_basket,
             stickies = ExamplePileD,
         ),
         FreeformCategory(
             title = "Exercise",
-            icon = R.drawable.ic_category_inbox,
+            icon = R.drawable.ic_category_exercise,
             stickies = ExamplePileE,
         ),
         FreeformCategory(
             title = "Medor",
-            icon = R.drawable.ic_category_inbox,
+            icon = R.drawable.ic_category_bone,
             stickies = ExamplePileF,
         ),
     )

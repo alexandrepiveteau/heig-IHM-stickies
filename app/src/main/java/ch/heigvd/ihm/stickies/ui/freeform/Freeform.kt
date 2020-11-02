@@ -33,6 +33,30 @@ import ch.heigvd.ihm.stickies.ui.stickies.*
 import ch.heigvd.ihm.stickies.util.fastForEachIndexedReversed
 
 /**
+ * Calculates the offset to be applied to a cell at a certain grid index to hide it from the
+ * category detail view.
+ *
+ * @param index the grid index of the item to hide.
+ * @param origin the origin of the plane in which items are dropped.
+ * @param cellSize the dimensions of a cell that is displayed.
+ * @param size the size of the plane that the items are displayed on.
+ *
+ * @return the [Offset] at which the items will be placed when hidden.
+ */
+@Suppress("NOTHING_TO_INLINE")
+private inline fun hiddenOffset(
+    index: Int,
+    origin: Offset,
+    cellSize: Offset,
+    size: Offset,
+): Offset {
+    // TODO : Rather than stacking all the stickies on the leading side, implement some sort of
+    //        explode animation for the stickies.
+    val leading = (size.x + cellSize.x * 2) / 2
+    return Offset(x = -leading, y = 0f)
+}
+
+/**
  * Calculates the offset at which an item at a certain index should be positioned to be at rest.
  *
  * @param index the index for which we want the rest offset.
@@ -141,16 +165,34 @@ fun Freeform(
             }
             key(category.stickies) {
                 val isSelfOpen = model.open == index
+                val hiddenOffset = hiddenOffset(
+                    index = index,
+                    cellSize = stickySizeOffset,
+                    origin = start,
+                    size = size
+                )
                 FreeformPile(
                     stickies = category.stickies,
-                    restOffset = rest,
+                    restOffset = when {
+                        isSelfOpen -> Offset.Zero
+                        model.isOpen -> hiddenOffset
+                        else -> rest
+                    },
                     open = isSelfOpen,
-                    onDrag = setOffset,
+                    onDrag = { offset ->
+                        if (!model.isOpen) {
+                            setOffset(offset)
+                        }
+                    },
                     onDrop = {
-                        val droppedAt = dropIndex(offset, start, size)
-
-                        // Cascade our model update.
-                        setModel(model.swap(droppedAt, index))
+                        if (!model.isOpen) {
+                            setModel(
+                                model.swap(
+                                    dropIndex(offset, start, size),
+                                    index
+                                )
+                            )
+                        }
                     },
                     onClick = { _ ->
                         if (isSelfOpen) {

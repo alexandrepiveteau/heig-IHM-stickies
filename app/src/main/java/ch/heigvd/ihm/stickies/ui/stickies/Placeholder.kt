@@ -42,7 +42,7 @@ fun Placeholder(
     modifier: Modifier = Modifier,
 ) {
     // TODO : Use context-provided instead.
-    val color = Color.Black.copy(alpha = 0.1f)
+    val color = Color.Black.copy(alpha = 0.2f)
     Providers(AmbientContentColor provides color) {
         Box(
             modifier = modifier

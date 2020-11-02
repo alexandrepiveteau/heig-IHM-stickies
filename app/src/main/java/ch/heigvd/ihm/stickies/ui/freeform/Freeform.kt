@@ -1,4 +1,4 @@
-package ch.heigvd.ihm.stickies.ui
+package ch.heigvd.ihm.stickies.ui.freeform
 
 import androidx.compose.animation.animate
 import androidx.compose.animation.core.Spring
@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.AmbientEmphasisLevels
 import androidx.compose.material.ProvideEmphasis
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.LongPressDragObserver
@@ -106,16 +109,9 @@ fun Freeform(
         val start = Offset(x = startX, y = startY)
 
         // Set the initial model.
-        val (model, setModel) = remember {
-            mutableStateOf(
-                listOf(
-                    ExamplePileA, ExamplePileB, ExamplePileC,
-                    ExamplePileD, ExamplePileE, ExamplePileF,
-                )
-            )
-        }
+        val (model, setModel) = remember { mutableStateOf(initialModel) }
 
-        model.fastForEachIndexed { index, pile ->
+        model.piles.fastForEachIndexed { index, pile ->
             val rest = restOffset(
                 index,
                 origin = start,
@@ -133,15 +129,8 @@ fun Freeform(
                     onDrop = {
                         val droppedAt = dropIndex(offset, start, size)
 
-                        // Re-arrange piles.
-                        val mutable = model.toMutableList()
-                        val a = mutable[index]
-                        val b = mutable[droppedAt]
-                        mutable[droppedAt] = a
-                        mutable[index] = b
-
                         // Cascade our model update.
-                        setModel(mutable)
+                        setModel(model.swap(droppedAt, index))
                     },
                 )
             }
@@ -327,40 +316,3 @@ private val PileOffsetY = listOf(0.dp, (-6).dp, (-6).dp)
 // Grid dimensions.
 private const val GridHorizontalCellCount = 3
 private const val GridVerticalCellCount = 2
-
-// TODO : REMOVE THIS EXAMPLE DATA
-
-val ExamplePileA: List<Sticky> = listOf(
-    Sticky(11, Color.StickiesYellow, "Take Medor to the vet", false),
-    Sticky(12, Color.StickiesOrange, "Buy some cat food", false)
-)
-
-val ExamplePileB: List<Sticky> = listOf(
-    Sticky(21, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(22, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(23, Color.StickiesYellow, "Call my pharmacist", false)
-)
-
-val ExamplePileC: List<Sticky> = listOf(
-    Sticky(31, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(32, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(33, Color.StickiesYellow, "Call my pharmacist", false)
-)
-
-val ExamplePileD: List<Sticky> = listOf(
-    Sticky(41, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(42, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(43, Color.StickiesYellow, "Call my pharmacist", false)
-)
-
-val ExamplePileE: List<Sticky> = listOf(
-    Sticky(51, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(52, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(53, Color.StickiesYellow, "Call my pharmacist", false)
-)
-
-val ExamplePileF: List<Sticky> = listOf(
-    Sticky(61, Color.StickiesPink, "Dentist at 10 am", true),
-    Sticky(62, Color.StickiesBlue, "Take some Aspirin", false),
-    Sticky(63, Color.StickiesYellow, "Call my pharmacist", false)
-)

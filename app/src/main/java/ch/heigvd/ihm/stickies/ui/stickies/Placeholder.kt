@@ -26,7 +26,7 @@ import ch.heigvd.ihm.stickies.ui.modifier.aboveOffset
 
 private val HintTextStyle = TextStyle(
     fontFamily = Archivo,
-    fontSize = 14.sp,
+    fontSize = 24.sp,
     fontWeight = FontWeight.Bold,
 )
 private val ContentTextStyle = TextStyle(
@@ -42,12 +42,11 @@ fun Placeholder(
     modifier: Modifier = Modifier,
 ) {
     // TODO : Use context-provided instead.
-    val color = Color.Black.copy(alpha = 0.2f)
-    val border = Color.Black.copy(alpha = 0.1f)
+    val color = Color.Black.copy(alpha = 0.1f)
     Providers(AmbientContentColor provides color) {
         Box(
             modifier = modifier
-                .border(4.dp, border, RoundedCornerShape(32.dp))
+                .border(4.dp, color, RoundedCornerShape(32.dp))
                 .size(256.dp),
             alignment = Alignment.Center,
         ) {
@@ -60,8 +59,8 @@ fun Placeholder(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Spacer(Modifier.preferredWidth(8.dp))
-                    Icon(asset, Modifier.preferredSize(24.dp))
-                    Spacer(Modifier.preferredWidth(8.dp))
+                    Icon(asset, Modifier.drawLayer(scaleX = 1.25f, scaleY = 1.25f))
+                    Spacer(Modifier.preferredWidth(16.dp))
                     Text(title, style = HintTextStyle)
                 }
                 Spacer(Modifier.height(16.dp))

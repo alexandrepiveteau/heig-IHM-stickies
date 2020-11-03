@@ -27,6 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import ch.heigvd.ihm.stickies.model.Sticky
 import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
+import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridHorizontalCellCount
+import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridVerticalCellCount
+import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.PileAngles
+import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.PileOffsetX
+import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.PileOffsetY
+import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.StickyMaxStiffness
+import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.StickyMinStiffness
 import ch.heigvd.ihm.stickies.ui.modifier.offset
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.*
@@ -150,12 +157,14 @@ fun Freeform(
                     title = category.title,
                     asset = vectorResource(id = category.icon),
                     color = color,
-                    modifier = Modifier.offset(restOffset(
-                        index = index,
-                        origin = start,
-                        cellSize = stickySizeOffset,
-                        spacer = spacer,
-                    ))
+                    modifier = Modifier.offset(
+                        restOffset(
+                            index = index,
+                            origin = start,
+                            cellSize = stickySizeOffset,
+                            spacer = spacer,
+                        )
+                    )
                 )
             }
         }
@@ -182,7 +191,7 @@ fun Freeform(
                     size = size
                 )
                 FreeformPile(
-                    stickies = category.stickies,
+                    stickies = category.stickies.map(FreeformSticky::sticky),
                     restOffset = when {
                         isSelfOpen -> Offset.Zero
                         model.isOpen -> hiddenOffset
@@ -197,7 +206,7 @@ fun Freeform(
                     onDrop = {
                         if (!model.isOpen) {
                             setModel(
-                                model.swap(
+                                model.swapCategories(
                                     dropIndex(offset, start, size),
                                     index
                                 )
@@ -376,15 +385,18 @@ private fun FreeformSticky(
     }
 }
 
-// Stiffness that's given to the different springs.
-private const val StickyMinStiffness = Spring.StiffnessVeryLow
-private const val StickyMaxStiffness = Spring.StiffnessLow
+object FreeformConstants {
 
-// Angles and offsets applied to stickies, depending on their pile index.
-private val PileAngles = listOf(0f, 3f, 2f)
-private val PileOffsetX = listOf(0.dp, 4.dp, (-4).dp)
-private val PileOffsetY = listOf(0.dp, (-6).dp, (-6).dp)
+    // Stiffness that's given to the different springs.
+    const val StickyMinStiffness = Spring.StiffnessVeryLow
+    const val StickyMaxStiffness = Spring.StiffnessLow
 
-// Grid dimensions.
-private const val GridHorizontalCellCount = 3
-private const val GridVerticalCellCount = 2
+    // Angles and offsets applied to stickies, depending on their pile index.
+    val PileAngles = listOf(0f, 3f, 2f)
+    val PileOffsetX = listOf(0.dp, 4.dp, (-4).dp)
+    val PileOffsetY = listOf(0.dp, (-6).dp, (-6).dp)
+
+    // Grid dimensions.
+    const val GridHorizontalCellCount = 3
+    const val GridVerticalCellCount = 2
+}

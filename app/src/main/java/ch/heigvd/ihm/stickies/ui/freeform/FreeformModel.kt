@@ -6,10 +6,15 @@ import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.model.Sticky
 import ch.heigvd.ihm.stickies.ui.*
 
+data class FreeformSticky(
+    val sticky: Sticky,
+    val dragState: DragState,
+)
+
 data class FreeformCategory(
     val title: String,
     @DrawableRes val icon: Int,
-    val stickies: List<Sticky>,
+    val stickies: List<FreeformSticky>,
 )
 
 data class FreeformModel(
@@ -32,7 +37,7 @@ data class FreeformModel(
      *
      * @return the new [FreeformModel].
      */
-    fun swap(first: Int, second: Int): FreeformModel {
+    fun swapCategories(first: Int, second: Int): FreeformModel {
         val a = categories[first].stickies
         val b = categories[second].stickies
         val catA = categories[first].copy(stickies = b)
@@ -81,37 +86,41 @@ val ExamplePileF: List<Sticky> = listOf(
     Sticky(63, Color.StickiesPink, "", false)
 )
 
+private fun List<Sticky>.toFreeform(): List<FreeformSticky> {
+    return map { FreeformSticky(it, DragState.NotDragging) }
+}
+
 val initialModel = FreeformModel(
     categories = listOf(
         FreeformCategory(
             title = "Inbox",
             icon = R.drawable.ic_category_inbox,
-            stickies = ExamplePileA,
+            stickies = ExamplePileA.toFreeform(),
         ),
         FreeformCategory(
             title = "Groceries",
             icon = R.drawable.ic_category_basket,
-            stickies = ExamplePileB,
+            stickies = ExamplePileB.toFreeform(),
         ),
         FreeformCategory(
             title = "Medical Stuff",
             icon = R.drawable.ic_category_medical,
-            stickies = ExamplePileC,
+            stickies = ExamplePileC.toFreeform(),
         ),
         FreeformCategory(
             title = "Appointments",
             icon = R.drawable.ic_category_basket,
-            stickies = ExamplePileD,
+            stickies = ExamplePileD.toFreeform(),
         ),
         FreeformCategory(
             title = "Exercise",
             icon = R.drawable.ic_category_exercise,
-            stickies = ExamplePileE,
+            stickies = ExamplePileE.toFreeform(),
         ),
         FreeformCategory(
             title = "Medor",
             icon = R.drawable.ic_category_bone,
-            stickies = ExamplePileF,
+            stickies = ExamplePileF.toFreeform(),
         ),
     ),
     open = null,

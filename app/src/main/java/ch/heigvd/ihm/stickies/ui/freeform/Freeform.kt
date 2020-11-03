@@ -55,12 +55,11 @@ private inline fun hiddenOffset(
     index: Int,
     origin: Offset,
     cellSize: Offset,
+    spacer: Offset,
     size: Offset,
 ): Offset {
-    // TODO : Rather than stacking all the stickies on the leading side, implement some sort of
-    //        explode animation for the stickies.
-    val leading = (size.x + cellSize.x * 2) / 2
-    return Offset(x = -leading, y = 0f)
+    return restOffset(index, origin, cellSize, spacer)
+        .plus(Offset(x = 0f, y = -size.y))
 }
 
 /**
@@ -188,7 +187,8 @@ fun Freeform(
                     index = index,
                     cellSize = stickySizeOffset,
                     origin = start,
-                    size = size
+                    spacer = spacer,
+                    size = size,
                 )
                 FreeformPile(
                     stickies = category.stickies.map(FreeformSticky::sticky),

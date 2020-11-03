@@ -1,7 +1,9 @@
 package ch.heigvd.ihm.stickies.ui.freeform
 
 import androidx.annotation.DrawableRes
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.util.fastFirstOrNull
 import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.model.Sticky
 import ch.heigvd.ihm.stickies.ui.*
@@ -16,6 +18,15 @@ data class FreeformCategory(
     @DrawableRes val icon: Int,
     val stickies: List<FreeformSticky>,
 )
+
+fun List<FreeformSticky>.pileOffset(): Offset {
+    val elem = fastFirstOrNull { it.dragState is DragState.DraggingPile }
+    return if (elem != null) {
+        (elem.dragState as DragState.DraggingPile).dragOffset
+    } else {
+        Offset.Zero
+    }
+}
 
 data class FreeformModel(
     val categories: List<FreeformCategory>,

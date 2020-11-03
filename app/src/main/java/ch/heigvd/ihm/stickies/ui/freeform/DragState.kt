@@ -15,7 +15,7 @@ sealed class DragState {
      *
      * @param dragOffset how much offset there is for this sticky.
      */
-    class DraggingSingle(dragOffset: Offset = Offset.Zero) : DragState()
+    data class DraggingSingle(val dragOffset: Offset = Offset.Zero) : DragState()
 
     /**
      * This sticky is being dragged, and it's "holding" its whole pile ot stickies behind it. The
@@ -23,7 +23,7 @@ sealed class DragState {
      *
      * @param dragOffset how much offset these is for this sticky group.
      */
-    class DraggingPile(dragOffset: Offset = Offset.Zero) : DragState()
+    data class DraggingPile(val dragOffset: Offset = Offset.Zero) : DragState()
 
     /**
      * This sticky is not being dragged.

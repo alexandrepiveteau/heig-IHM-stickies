@@ -169,127 +169,139 @@ fun Freeform(
         }
 
         // Render, for each category, all of the involved stickies.
-        model.categories.fastForEachIndexed { index, category ->
-            val rest = restOffset(
-                index,
-                origin = start,
-                cellSize = stickySizeOffset,
-                spacer = spacer,
-            )
-            val (offset, setOffset) = remember { mutableStateOf(rest) }
+        model.categories.fastForEachIndexed { catIndex, category ->
+            category.stickies.fastForEachIndexedReversed { stiIndex, sticky ->
+                val stickyRestOffset = when {
+                    model.open == catIndex -> Offset.Zero // TODO : Change this.
+                    model.isOpen -> hiddenOffset(catIndex, start, stickySizeOffset, spacer, size)
+                    else -> restOffset(catIndex, start, stickySizeOffset, spacer)
+                }
+                val dragOffset = when {
+                    model.open == catIndex -> Offset.Zero
+                    model.isOpen ->
+                        if (sticky.dragState is DragState.DraggingSingle) sticky.dragState.dragOffset
+                        else Offset.Zero
+                    else -> category.stickies.pileOffset()
+                }
+                val dragState = sticky.dragState
 
-            // TODO : Check if there's a way to do without key() if we're animating across screens.
-            // TODO : Can we somehow inline some of this at the call site, to get nice animations ?
+                val isSelfOpen = model.open == catIndex
+                val isAnyOpen = model.isOpen
 
-            key(category.stickies) {
-                val isSelfOpen = model.open == index
-                val hiddenOffset = hiddenOffset(
-                    index = index,
-                    cellSize = stickySizeOffset,
-                    origin = start,
-                    spacer = spacer,
-                    size = size,
-                )
-                FreeformPile(
-                    stickies = category.stickies.map(FreeformSticky::sticky),
-                    restOffset = when {
-                        isSelfOpen -> Offset.Zero
-                        model.isOpen -> hiddenOffset
-                        else -> rest
-                    },
-                    open = isSelfOpen,
-                    onDrag = { offset ->
-                        if (!model.isOpen) {
-                            setOffset(offset)
-                        }
-                    },
-                    onDrop = {
-                        if (!model.isOpen) {
-                            setModel(
-                                model.swapCategories(
-                                    dropIndex(offset, start, size),
-                                    index
-                                )
-                            )
-                        }
-                    },
-                    onClick = { _ ->
-                        if (isSelfOpen) {
-                            setModel(model.copy(open = null))
-                        } else {
-                            setModel(model.copy(open = index))
-                        }
-                    },
-                )
+                fun updateModelWithDragState(state: DragState): FreeformModel {
+                    val updatedCategory = category.stickies.toMutableList().apply {
+                        set(stiIndex, sticky.copy(dragState = state))
+                    }
+                    val updatedModel = model.categories.toMutableList().apply {
+                        set(catIndex, category.copy(stickies = updatedCategory))
+                    }
+                    return model.copy(categories = updatedModel)
+                }
+
+                key(sticky.sticky.identifier) {
+                    FreeformSticky(
+                        bubbled = sticky.sticky.highlighted,
+                        dragged = sticky.dragState is DragState.DraggingSingle ||
+                                category.stickies.any { it.dragState is DragState.DraggingPile },
+                        offset = stickyRestOffset + dragOffset,
+                        title = sticky.sticky.title,
+                        color = sticky.sticky.color,
+                        pileIndex = stiIndex,
+                        pileSize = category.stickies.size,
+                        onClick = {
+                            if (isSelfOpen) {
+                                setModel(model.copy(open = null))
+                            } else {
+                                setModel(model.copy(open = catIndex))
+                            }
+                        },
+                        onDragStarted = {
+                            when {
+                                isSelfOpen -> {
+                                    setModel(updateModelWithDragState(DragState.DraggingSingle()))
+                                }
+                                isAnyOpen -> { /* Ignored. */
+                                }
+                                else -> {
+                                    setModel(updateModelWithDragState(DragState.DraggingPile()))
+                                }
+                            }
+                        },
+                        onDragStopped = {
+                            when {
+                                isSelfOpen && dragState is DragState.DraggingSingle -> {
+                                    setModel(updateModelWithDragState(DragState.NotDragging))
+                                }
+                                !isAnyOpen && dragState is DragState.DraggingPile -> {
+                                    val offset = stickyRestOffset + dragState.dragOffset
+                                    val dismissedDrag =
+                                        updateModelWithDragState(DragState.NotDragging)
+                                    setModel(
+                                        dismissedDrag.swapCategories(
+                                            dropIndex(offset, start, size),
+                                            catIndex
+                                        )
+                                    )
+                                }
+                                else -> {
+                                    setModel(updateModelWithDragState(DragState.NotDragging))
+                                }
+                            }
+                        },
+                        onDragOffset = { offset ->
+                            when {
+                                isSelfOpen -> {
+                                    when (dragState) {
+                                        is DragState.DraggingPile -> {
+                                            setModel(updateModelWithDragState(DragState.NotDragging))
+                                        }
+                                        is DragState.DraggingSingle -> {
+                                            setModel(
+                                                updateModelWithDragState(
+                                                    DragState.DraggingSingle(
+                                                        dragState.dragOffset + offset
+                                                    )
+                                                )
+                                            )
+                                        }
+                                        is DragState.NotDragging -> {
+                                            /* Ignored. */
+                                        }
+                                    }
+                                }
+                                isAnyOpen -> {
+                                    val newModel = updateModelWithDragState(DragState.NotDragging)
+                                    setModel(newModel)
+                                }
+                                else -> {
+                                    when (dragState) {
+                                        is DragState.DraggingPile -> {
+                                            setModel(
+                                                updateModelWithDragState(
+                                                    DragState.DraggingPile(
+                                                        dragState.dragOffset + offset
+                                                    )
+                                                )
+                                            )
+                                        }
+                                        is DragState.DraggingSingle -> {
+                                            setModel(updateModelWithDragState(DragState.NotDragging))
+                                        }
+                                        is DragState.NotDragging -> {
+                                            /* Ignored. */
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                    )
+                }
             }
         }
     }
 }
 
 // FREEFORM COMPOSABLES.
-
-/**
- * A freeform pile of stickies, that is inlined at call site.
- *
- * @param stickies the [List] of all the stickies in the pile.
- * @param restOffset the offset at which the items are displayed when not dragged.
- * @param onDrag callback that returns the absolute offset of the pile when it is dragged.
- * @param onDrop callback that is called when the pile is dropped.
- * @param onClick callback that is called when a sticky is clicked.
- */
-@Suppress("NOTHING_TO_INLINE")
-@Composable
-private inline fun FreeformPile(
-    stickies: List<Sticky>,
-    open: Boolean,
-    restOffset: Offset,
-    noinline onDrag: (absolute: Offset) -> Unit,
-    noinline onDrop: () -> Unit,
-    noinline onClick: (Sticky) -> Unit,
-) {
-    val (dragged, setDragged) = remember { mutableStateOf(false) }
-    val (dragOffset, setDragOffset) = remember { mutableStateOf(Offset.Zero) }
-
-    val bubbled = remember(stickies) { stickies.any { it.highlighted } }
-
-    stickies.fastForEachIndexedReversed { index, sticky ->
-        key(sticky.identifier) {
-            if (index == 0) {
-                FreeformSticky(
-                    bubbled = bubbled,
-                    dragged = dragged,
-                    offset = restOffset + dragOffset,
-                    title = sticky.title,
-                    color = sticky.color,
-                    pileIndex = index,
-                    pileSize = stickies.size,
-                    onDragStarted = { setDragged(true) },
-                    onDragOffset = { delta ->
-                        setDragOffset(dragOffset + delta)
-                        onDrag(restOffset + dragOffset + delta)
-                    },
-                    onDragStopped = {
-                        setDragged(false)
-                        setDragOffset(Offset.Zero)
-                        onDrop()
-                    },
-                    onClick = { onClick(sticky) },
-                )
-            } else {
-                FreeformSticky(
-                    bubbled = false,
-                    dragged = dragged,
-                    offset = restOffset + dragOffset,
-                    title = sticky.title,
-                    color = sticky.color,
-                    pileIndex = index,
-                    pileSize = stickies.size,
-                    onClick = { onClick(sticky) },
-                )
-            }
-        }
-    }
-}
 
 /**
  * A composable that can display a floating sticky.

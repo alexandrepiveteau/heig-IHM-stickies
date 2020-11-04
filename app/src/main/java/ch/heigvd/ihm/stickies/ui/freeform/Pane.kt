@@ -206,12 +206,14 @@ fun Pane(modifier: Modifier = Modifier) {
                             }
                         },
                         onDragOffset = { offset ->
-                            setModel(
-                                model.updateStickyDrag(
-                                    sticky.sticky.identifier,
-                                    Dragging(position + offset)
+                            if (sticky.dragState.isDragging) {
+                                setModel(
+                                    model.updateStickyDrag(
+                                        sticky.sticky.identifier,
+                                        Dragging(position + offset)
+                                    )
                                 )
-                            )
+                            }
                         },
                     )
                 }

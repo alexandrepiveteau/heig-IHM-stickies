@@ -1,3 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.Stickies" parent="Theme.MaterialComponents.Light.NoActionBar"/>
+
+    <color name="stickies_fake_white">#F6F6F6</color>
+    <color name="stickies_fake_white_darker">#D4D4D4</color>
+
+    <style name="Theme.Stickies" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/stickies_fake_white_darker</item>
+        <item name="android:windowBackground">@color/stickies_fake_white</item>
+    </style>
+
 </resources>

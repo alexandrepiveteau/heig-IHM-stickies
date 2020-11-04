@@ -1,5 +1,6 @@
 package ch.heigvd.ihm.stickies.ui.freeform
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.WithConstraints
@@ -36,7 +37,7 @@ fun Freeform(
     modifier: Modifier = Modifier,
     content: @Composable FreeformScope.() -> Unit,
 ) {
-    WithConstraints(modifier) {
+    WithConstraints {
         val width = with(DensityAmbient.current) { maxWidth.toPx() }
         val height = with(DensityAmbient.current) { maxHeight.toPx() }
         val size = Offset(x = width, y = height)
@@ -52,21 +53,18 @@ fun Freeform(
                     (FreeformConstants.GridVerticalCellCount + 1)
         val spacer = Offset(x = spacerX, y = spacerY)
 
-        // Initial offset to apply to the elements to start at the top start corner.
-        val startX = (stickySize - width) / 2
-        val startY = (stickySize - height) / 2
-        val start = Offset(x = startX, y = startY)
-
         // Create a scope with the provided data.
         val scope = FreeformScopeImpl(
-            origin = start,
+            origin = Offset.Zero,
             size = size,
             cellSize = stickySizeOffset,
             spacer = spacer,
         )
 
         // Invoke the scope.
-        content.invoke(scope)
+        Box(modifier) {
+            content.invoke(scope)
+        }
     }
 }
 

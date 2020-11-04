@@ -120,9 +120,14 @@ fun Pane(modifier: Modifier = Modifier) {
                     title = category.title,
                     asset = vectorResource(id = category.icon),
                     color = color,
-                    modifier = Modifier.offset(
-                        restOffset(index)
-                    )
+                    modifier = Modifier
+                        .offset(animate(restOffset(index)))
+                        .clickable(onClick = {
+                            if (!model.isOpen) {
+                                setModel(model.swapCategories(index, 0))
+                            }
+                        }, indication = null)
+
                 )
             }
         }
@@ -137,12 +142,15 @@ fun Pane(modifier: Modifier = Modifier) {
                 val catIndex = sticky.categoryIndex
                 val dragOffset = sticky.dragState.offset
                 val stickyRestOffset = when {
-                    model.open == sticky.categoryIndex -> Offset.Zero // TODO : Change this.
+                    // TODO : Change this.
+                    model.open == sticky.categoryIndex -> origin + Offset(
+                        (size.x - cellSize.x) / 2,
+                        (size.y - cellSize.y) / 2,
+                    )
                     model.isOpen -> hiddenOffset(catIndex)
                     else -> restOffset(catIndex)
                 }
                 val position = when {
-                    model.open == catIndex -> Offset.Zero
                     dragOffset != null -> dragOffset
                     else -> stickyRestOffset
                 }
@@ -273,8 +281,8 @@ private fun FreeformSticky(
     Bubble(
         visible = bubbled,
         modifier
-            .size(StickySize)
             .offsetPx(animate(offset.x, spring), animate(offset.y, spring))
+            .size(StickySize)
             .drawLayer(scaleX = scale, scaleY = scale)
             .zIndex(base + supplement)
     ) {

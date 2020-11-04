@@ -52,7 +52,7 @@ fun Clock(
     val numbersPosMult = 0.7f
 
     fun hPartialAngle(min: Int): Float {
-        return ((time.minute / 60f) / 6f * PI.toFloat())
+        return ((min / 60f) / 6f * PI.toFloat())
     }
 
     fun hTruncatedAngle(hour: Int): Float {

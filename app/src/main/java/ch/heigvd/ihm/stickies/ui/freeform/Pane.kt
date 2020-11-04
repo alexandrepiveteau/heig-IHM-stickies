@@ -112,14 +112,13 @@ fun Pane(modifier: Modifier = Modifier) {
         // TODO : Add support for draggable categories.
         model.categories.fastForEachIndexed { index, category ->
             key(category) {
-                val color = animate(
-                    if (model.open != null) Color.StickiesFakeWhite
-                    else contentColorFor(color = MaterialTheme.colors.surface)
-                )
+                val color = if (model.open != null) Color.StickiesFakeWhite
+                else contentColorFor(color = MaterialTheme.colors.surface)
+
                 Placeholder(
                     title = category.title,
                     asset = vectorResource(id = category.icon),
-                    color = color,
+                    color = animate(color),
                     modifier = Modifier
                         .offset(animate(restOffset(index)))
                         .clickable(onClick = {

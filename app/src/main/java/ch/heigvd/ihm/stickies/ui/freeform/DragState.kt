@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package ch.heigvd.ihm.stickies.ui.freeform
 
 import androidx.compose.ui.geometry.Offset
@@ -5,28 +7,21 @@ import androidx.compose.ui.geometry.Offset
 /**
  * A sealed class representing the different states that one can be in when dragging.
  *
- * TODO (performance) : Switch to an inline class.
+ * @param offset the [Offset] that is applied to the state. null if not dragging.
  */
-sealed class DragState {
+inline class DragState(val offset: Offset?)
 
-    /**
-     * This sticky is being dragged, with a certain offset from its starting position. The sticky
-     * should be dragged individually, not as a group.
-     *
-     * @param dragOffset how much offset there is for this sticky.
-     */
-    data class DraggingSingle(val dragOffset: Offset = Offset.Zero) : DragState()
+/**
+ * Returns true if this [DragState] is actually dragging.
+ */
+val DragState.isDragging: Boolean get() = offset != null
 
-    /**
-     * This sticky is being dragged, and it's "holding" its whole pile ot stickies behind it. The
-     * sticky drags the whole group.
-     *
-     * @param dragOffset how much offset these is for this sticky group.
-     */
-    data class DraggingPile(val dragOffset: Offset = Offset.Zero) : DragState()
+/**
+ * Creates a new [DragState] with an [Offset] that indicates that a drag is occurring.
+ */
+fun Dragging(offset: Offset): DragState = (DragState(offset))
 
-    /**
-     * This sticky is not being dragged.
-     */
-    object NotDragging : DragState()
-}
+/**
+ * Creates a new [DragState] with no [Offset] that indicates that no drag is occurring.
+ */
+fun NotDragging(): DragState = DragState(null)

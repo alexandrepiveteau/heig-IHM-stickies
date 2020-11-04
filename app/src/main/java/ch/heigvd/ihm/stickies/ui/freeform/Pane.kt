@@ -127,22 +127,25 @@ fun Pane(modifier: Modifier = Modifier) {
             }
         }
 
-        // Render, for each category, all of the involved stickies.
-        model.categories.fastForEachIndexed { catIndex, category ->
-            category.stickies.fastForEachIndexedReversed { stiIndex, sticky ->
+        val piles = model.stickies.groupBy { it.categoryIndex }.toList()
+
+        // Render all the sticky piles.
+        for ((_, stickies) in piles) {
+
+            // Render, for each category, all of the involved stickies.
+            stickies.fastForEachIndexedReversed { stiIndex, sticky ->
+                val catIndex = sticky.categoryIndex
+                val dragOffset = sticky.dragState.offset
                 val stickyRestOffset = when {
-                    model.open == catIndex -> Offset.Zero // TODO : Change this.
+                    model.open == sticky.categoryIndex -> Offset.Zero // TODO : Change this.
                     model.isOpen -> hiddenOffset(catIndex)
                     else -> restOffset(catIndex)
                 }
-                val dragOffset = when {
+                val position = when {
                     model.open == catIndex -> Offset.Zero
-                    model.isOpen ->
-                        if (sticky.dragState is DragState.DraggingSingle) sticky.dragState.dragOffset
-                        else Offset.Zero
-                    else -> category.stickies.pileOffset()
+                    dragOffset != null -> dragOffset
+                    else -> stickyRestOffset
                 }
-                val dragState = sticky.dragState
 
                 val isSelfOpen = model.open == catIndex
                 val isAnyOpen = model.isOpen
@@ -150,13 +153,12 @@ fun Pane(modifier: Modifier = Modifier) {
                 key(sticky.sticky.identifier) {
                     FreeformSticky(
                         bubbled = sticky.sticky.highlighted,
-                        dragged = sticky.dragState is DragState.DraggingSingle ||
-                                category.stickies.any { it.dragState is DragState.DraggingPile },
-                        offset = stickyRestOffset + dragOffset,
+                        dragged = dragOffset != null,
+                        offset = position,
                         title = sticky.sticky.title,
                         color = sticky.sticky.color,
                         pileIndex = stiIndex,
-                        pileSize = category.stickies.size,
+                        pileSize = stickies.size,
                         onClick = {
                             if (isSelfOpen) {
                                 setModel(model.copy(open = null))
@@ -165,131 +167,44 @@ fun Pane(modifier: Modifier = Modifier) {
                             }
                         },
                         onDragStarted = {
-                            when {
-                                isSelfOpen -> {
-                                    setModel(
-                                        model.updateDrag(
-                                            categoryIndex = catIndex,
-                                            stickyIndex = stiIndex,
-                                            dragState = DragState.DraggingSingle(),
-                                        )
+                            if (isSelfOpen || !isAnyOpen) {
+                                setModel(
+                                    model.updateStickyDrag(
+                                        sticky.sticky.identifier,
+                                        Dragging(position)
                                     )
-                                }
-                                isAnyOpen -> { /* Ignored. */
-                                }
-                                else -> {
-                                    setModel(
-                                        model.updateDrag(
-                                            categoryIndex = catIndex,
-                                            stickyIndex = stiIndex,
-                                            dragState = DragState.DraggingPile(),
-                                        )
-                                    )
-                                }
+                                )
                             }
                         },
                         onDragStopped = {
                             when {
-                                isSelfOpen && dragState is DragState.DraggingSingle -> {
+                                !isAnyOpen -> {
                                     setModel(
-                                        model.updateDrag(
-                                            categoryIndex = catIndex,
-                                            stickyIndex = stiIndex,
-                                            dragState = DragState.NotDragging,
-                                        )
-                                    )
-                                }
-                                !isAnyOpen && dragState is DragState.DraggingPile -> {
-                                    val offset = stickyRestOffset + dragState.dragOffset
-                                    val dismissedDrag = model.updateDrag(
-                                        categoryIndex = catIndex,
-                                        stickyIndex = stiIndex,
-                                        dragState = DragState.NotDragging,
-                                    )
-                                    setModel(
-                                        dismissedDrag.swapCategories(
-                                            dropIndex(offset),
-                                            catIndex
-                                        )
+                                        model
+                                            .move(sticky.sticky.identifier, dropIndex(position))
+                                            .updateStickyDrag(
+                                                sticky.sticky.identifier,
+                                                NotDragging()
+                                            )
                                     )
                                 }
                                 else -> {
                                     setModel(
-                                        model.updateDrag(
-                                            categoryIndex = catIndex,
-                                            stickyIndex = stiIndex,
-                                            dragState = DragState.NotDragging,
+                                        model.updateStickyDrag(
+                                            sticky.sticky.identifier,
+                                            NotDragging()
                                         )
                                     )
                                 }
                             }
                         },
                         onDragOffset = { offset ->
-                            when {
-                                isSelfOpen -> {
-                                    when (dragState) {
-                                        is DragState.DraggingPile -> {
-                                            setModel(
-                                                model.updateDrag(
-                                                    categoryIndex = catIndex,
-                                                    stickyIndex = stiIndex,
-                                                    dragState = DragState.NotDragging,
-                                                )
-                                            )
-                                        }
-                                        is DragState.DraggingSingle -> {
-                                            setModel(
-                                                model.updateDrag(
-                                                    categoryIndex = catIndex,
-                                                    stickyIndex = stiIndex,
-                                                    dragState = DragState.DraggingSingle(
-                                                        dragState.dragOffset + offset
-                                                    ),
-                                                )
-                                            )
-                                        }
-                                        is DragState.NotDragging -> {
-                                            /* Ignored. */
-                                        }
-                                    }
-                                }
-                                isAnyOpen -> {
-                                    setModel(
-                                        model.updateDrag(
-                                            categoryIndex = catIndex,
-                                            stickyIndex = stiIndex,
-                                            dragState = DragState.NotDragging,
-                                        )
-                                    )
-                                }
-                                else -> {
-                                    when (dragState) {
-                                        is DragState.DraggingPile -> {
-                                            setModel(
-                                                model.updateDrag(
-                                                    categoryIndex = catIndex,
-                                                    stickyIndex = stiIndex,
-                                                    dragState = DragState.DraggingPile(
-                                                        dragState.dragOffset + offset
-                                                    ),
-                                                )
-                                            )
-                                        }
-                                        is DragState.DraggingSingle -> {
-                                            setModel(
-                                                model.updateDrag(
-                                                    categoryIndex = catIndex,
-                                                    stickyIndex = stiIndex,
-                                                    dragState = DragState.NotDragging,
-                                                )
-                                            )
-                                        }
-                                        is DragState.NotDragging -> {
-                                            /* Ignored. */
-                                        }
-                                    }
-                                }
-                            }
+                            setModel(
+                                model.updateStickyDrag(
+                                    sticky.sticky.identifier,
+                                    Dragging(position + offset)
+                                )
+                            )
                         },
                     )
                 }
@@ -352,6 +267,8 @@ private fun FreeformSticky(
         if (dragged) StickyRaisedElevation else StickyDefaultElevation,
         dpSpring,
     )
+    val base = elevation.value + ((pileSize - (pileIndex + 1)) / pileSize.toFloat()) + 1
+    val supplement = if (dragged) 1.0f else 0f
 
     Bubble(
         visible = bubbled,
@@ -359,7 +276,7 @@ private fun FreeformSticky(
             .size(StickySize)
             .offsetPx(animate(offset.x, spring), animate(offset.y, spring))
             .drawLayer(scaleX = scale, scaleY = scale)
-            .zIndex(elevation.value)
+            .zIndex(base + supplement)
     ) {
         Sticky(
             text = title,
@@ -384,11 +301,11 @@ private fun FreeformSticky(
                     }
                 })
                 .drawLayer(
-                    rotationZ = PileAngles[pileIndex % PileAngles.size],
+                    rotationZ = animate(PileAngles[pileIndex % PileAngles.size]),
                     transformOrigin = TransformOrigin.Center,
                 ).offset(
-                    x = PileOffsetX[pileIndex % PileOffsetX.size],
-                    y = PileOffsetY[pileIndex % PileOffsetY.size]
+                    x = animate(PileOffsetX[pileIndex % PileOffsetX.size]),
+                    y = animate(PileOffsetY[pileIndex % PileOffsetY.size]),
                 )
         )
     }

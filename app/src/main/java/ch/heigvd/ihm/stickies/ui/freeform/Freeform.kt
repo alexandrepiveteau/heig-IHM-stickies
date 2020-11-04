@@ -188,16 +188,6 @@ fun Freeform(
                 val isSelfOpen = model.open == catIndex
                 val isAnyOpen = model.isOpen
 
-                fun updateModelWithDragState(state: DragState): FreeformModel {
-                    val updatedCategory = category.stickies.toMutableList().apply {
-                        set(stiIndex, sticky.copy(dragState = state))
-                    }
-                    val updatedModel = model.categories.toMutableList().apply {
-                        set(catIndex, category.copy(stickies = updatedCategory))
-                    }
-                    return model.copy(categories = updatedModel)
-                }
-
                 key(sticky.sticky.identifier) {
                     FreeformSticky(
                         bubbled = sticky.sticky.highlighted,
@@ -218,24 +208,45 @@ fun Freeform(
                         onDragStarted = {
                             when {
                                 isSelfOpen -> {
-                                    setModel(updateModelWithDragState(DragState.DraggingSingle()))
+                                    setModel(
+                                        model.updateDrag(
+                                            categoryIndex = catIndex,
+                                            stickyIndex = stiIndex,
+                                            dragState = DragState.DraggingSingle(),
+                                        )
+                                    )
                                 }
                                 isAnyOpen -> { /* Ignored. */
                                 }
                                 else -> {
-                                    setModel(updateModelWithDragState(DragState.DraggingPile()))
+                                    setModel(
+                                        model.updateDrag(
+                                            categoryIndex = catIndex,
+                                            stickyIndex = stiIndex,
+                                            dragState = DragState.DraggingPile(),
+                                        )
+                                    )
                                 }
                             }
                         },
                         onDragStopped = {
                             when {
                                 isSelfOpen && dragState is DragState.DraggingSingle -> {
-                                    setModel(updateModelWithDragState(DragState.NotDragging))
+                                    setModel(
+                                        model.updateDrag(
+                                            categoryIndex = catIndex,
+                                            stickyIndex = stiIndex,
+                                            dragState = DragState.NotDragging,
+                                        )
+                                    )
                                 }
                                 !isAnyOpen && dragState is DragState.DraggingPile -> {
                                     val offset = stickyRestOffset + dragState.dragOffset
-                                    val dismissedDrag =
-                                        updateModelWithDragState(DragState.NotDragging)
+                                    val dismissedDrag = model.updateDrag(
+                                            categoryIndex = catIndex,
+                                            stickyIndex = stiIndex,
+                                            dragState = DragState.NotDragging,
+                                        )
                                     setModel(
                                         dismissedDrag.swapCategories(
                                             dropIndex(offset, start, size),
@@ -244,7 +255,13 @@ fun Freeform(
                                     )
                                 }
                                 else -> {
-                                    setModel(updateModelWithDragState(DragState.NotDragging))
+                                    setModel(
+                                        model.updateDrag(
+                                            categoryIndex = catIndex,
+                                            stickyIndex = stiIndex,
+                                            dragState = DragState.NotDragging,
+                                        )
+                                    )
                                 }
                             }
                         },
@@ -253,14 +270,22 @@ fun Freeform(
                                 isSelfOpen -> {
                                     when (dragState) {
                                         is DragState.DraggingPile -> {
-                                            setModel(updateModelWithDragState(DragState.NotDragging))
+                                            setModel(
+                                                model.updateDrag(
+                                                    categoryIndex = catIndex,
+                                                    stickyIndex = stiIndex,
+                                                    dragState = DragState.NotDragging,
+                                                )
+                                            )
                                         }
                                         is DragState.DraggingSingle -> {
                                             setModel(
-                                                updateModelWithDragState(
-                                                    DragState.DraggingSingle(
+                                                model.updateDrag(
+                                                    categoryIndex = catIndex,
+                                                    stickyIndex = stiIndex,
+                                                    dragState = DragState.DraggingSingle(
                                                         dragState.dragOffset + offset
-                                                    )
+                                                    ),
                                                 )
                                             )
                                         }
@@ -270,22 +295,35 @@ fun Freeform(
                                     }
                                 }
                                 isAnyOpen -> {
-                                    val newModel = updateModelWithDragState(DragState.NotDragging)
-                                    setModel(newModel)
+                                    setModel(
+                                        model.updateDrag(
+                                            categoryIndex = catIndex,
+                                            stickyIndex = stiIndex,
+                                            dragState = DragState.NotDragging,
+                                        )
+                                    )
                                 }
                                 else -> {
                                     when (dragState) {
                                         is DragState.DraggingPile -> {
                                             setModel(
-                                                updateModelWithDragState(
-                                                    DragState.DraggingPile(
+                                                model.updateDrag(
+                                                    categoryIndex = catIndex,
+                                                    stickyIndex = stiIndex,
+                                                    dragState = DragState.DraggingPile(
                                                         dragState.dragOffset + offset
-                                                    )
+                                                    ),
                                                 )
                                             )
                                         }
                                         is DragState.DraggingSingle -> {
-                                            setModel(updateModelWithDragState(DragState.NotDragging))
+                                            setModel(
+                                                model.updateDrag(
+                                                    categoryIndex = catIndex,
+                                                    stickyIndex = stiIndex,
+                                                    dragState = DragState.NotDragging,
+                                                )
+                                            )
                                         }
                                         is DragState.NotDragging -> {
                                             /* Ignored. */

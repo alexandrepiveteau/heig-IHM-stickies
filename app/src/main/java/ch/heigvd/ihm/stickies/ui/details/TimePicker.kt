@@ -14,12 +14,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
+import ch.heigvd.ihm.stickies.ui.StickiesBlue
 import java.time.LocalTime
-import java.time.LocalTime.MIDNIGHT
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -32,11 +34,26 @@ fun TimePicker(
         modifier: Modifier = Modifier,
 ) {
     Row(modifier) {
-        Button(onClick = { onClick(LocalTime.of((time.hour + 1) % 24, time.minute % 60)) }) {
+        Button(onClick = {
+            val minute = time.minute % 60
+            val hour = (time.hour + 1) % 24
+            onClick(LocalTime.of(hour, minute))
+        })
+        {
             Text("${time.hour}")
         }
 
-        Button(onClick = { onClick(LocalTime.of(time.hour % 24, (time.minute + 1) % 60)) }) {
+        Button(onClick = {
+            val incHour = time.minute + 1 == 60
+            val minute = (time.minute + 1) % 60
+            val hour = if (incHour) {
+                (time.hour + 1) % 24
+            } else {
+                time.hour % 24
+            }
+            onClick(LocalTime.of(hour, minute))
+        })
+        {
             Text("${time.minute}")
         }
     }
@@ -53,16 +70,16 @@ fun Clock(
     val angleOffset = 3 / 2f
 
     // Hours hand properties
-    val hoursLengthMult = 0.4f
-    val hoursWidth = 10f
+    val hoursLengthMult = 0.35f
+    val hoursWidth = 7f
 
     // Minutes hand properties
-    val minutesLengthMult = 0.6f
-    val minutesWidth = 10f
+    val minutesLengthMult = 0.55f
+    val minutesWidth = 7f
 
     // Numbers properties
-    val numbersPosMult = 0.7f
-    val textSize = 0.15f * clockRadius
+    val numbersPosMult = 0.675f
+    val textSize = 0.175f * clockRadius
 
 
     // Math functions
@@ -85,8 +102,8 @@ fun Clock(
     // Draw on the canvas
     Canvas(
             modifier
-                    .height((2 * clockRadius).dp)
-                    .width((2 * clockRadius).dp),
+                    .height(152.dp)
+                    .width(152.dp),
     ) {
         // Outer circle
         drawCircle(
@@ -107,6 +124,7 @@ fun Clock(
             paint.setTextSize(textSize)
             paint.setTypeface(Typeface.DEFAULT_BOLD)
             paint.isAntiAlias = true
+            paint.color = Color(0xFF262626).toArgb()
 
             for (x in 1 until 13) {
                 var rect = Rect()
@@ -130,6 +148,7 @@ fun Clock(
                         ).times(minutesLengthMult * clockRadius)
                 ),
                 strokeWidth = minutesWidth,
+                cap = StrokeCap.Round,
         )
 
         // Hours hand
@@ -143,12 +162,13 @@ fun Clock(
                         ).times(hoursLengthMult * clockRadius)
                 ),
                 strokeWidth = hoursWidth,
+                cap = StrokeCap.Round,
         )
 
         // Center dot
         drawCircle(
                 color = Color(0xFF262626),
-                radius = 0.075f * clockRadius,
+                radius = 0.06f * clockRadius,
                 center = offset,
         )
     }
@@ -157,9 +177,9 @@ fun Clock(
 @Composable
 @Preview
 private fun TimePickerPreview() {
-    Column(Modifier.background(Color.White).padding(16.dp)) {
+    Column(Modifier.background(Color.White)) {
         val (time, setTime) =
-                remember { mutableStateOf(MIDNIGHT) }
+                remember { mutableStateOf(LocalTime.of(Random.nextInt(0, 23), Random.nextInt(0, 59))) }
         TimePicker(
                 time = time,
                 onClick = setTime,

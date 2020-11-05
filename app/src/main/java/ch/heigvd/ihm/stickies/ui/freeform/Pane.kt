@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.zIndex
 import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
+import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridHorizontalCellCount
+import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridVerticalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileAngles
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileOffsetX
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileOffsetY
@@ -36,7 +38,6 @@ import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.StickyMinStiffness
 import ch.heigvd.ihm.stickies.ui.modifier.offset
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.*
-import ch.heigvd.ihm.stickies.util.fastForEachIndexedReversed
 
 /**
  * Calculates the offset to be applied to a cell at a certain grid index to hide it from the
@@ -49,9 +50,41 @@ import ch.heigvd.ihm.stickies.util.fastForEachIndexedReversed
 @Suppress("NOTHING_TO_INLINE")
 private inline fun FreeformScope.hiddenOffset(
     index: Int,
+    open: Int,
 ): Offset {
     return restOffset(index)
-        .plus(Offset(x = 0f, y = -size.y))
+        .plus(
+            Offset(
+                x = 0f,
+                y = if (open < (GridHorizontalCellCount * GridVerticalCellCount) / 2) size.y
+                else -size.y
+            )
+        )
+}
+
+/**
+ * Calculates the offset to be applied to a cell that is shown in the detail view.
+ *
+ * TODO : Provide some additional information related to scroll.
+ *
+ * @param index the grid index of the item to show.
+ *
+ * @return the [Offset] at which the item at the index-th position should be placed.
+ */
+@Suppress("NOTHING_TO_INLINE")
+private inline fun FreeformScope.detailOffset(
+    index: Int,
+): Offset {
+    val horizontalCount = index % 2
+    val verticalCount = (index - horizontalCount) / 2
+    val topLeading = origin +
+            Offset(x = 2 * spacer.x, y = 0.5f * spacer.y) +
+            Offset(x = cellSize.x, y = 0f)
+
+    return topLeading + Offset(
+        x = horizontalCount * (spacer.x + cellSize.x),
+        y = verticalCount * (spacer.y + cellSize.y),
+    )
 }
 
 /**
@@ -65,8 +98,8 @@ private inline fun FreeformScope.hiddenOffset(
 private inline fun FreeformScope.restOffset(
     index: Int,
 ): Offset {
-    val horizontalCount = index % FreeformConstants.GridHorizontalCellCount
-    val verticalCount = (index - horizontalCount) / FreeformConstants.GridVerticalCellCount
+    val horizontalCount = index % GridHorizontalCellCount
+    val verticalCount = (index - horizontalCount) / GridHorizontalCellCount
     // Items have at least one "unit" of spacer at the top left.
     return origin + Offset(
         spacer.x + (horizontalCount * (spacer.x + cellSize.x)),
@@ -88,15 +121,15 @@ private inline fun FreeformScope.dropIndex(
     // TODO : This implementation completely ignores the spacings. Maybe this is something we'll
     //        actually want to take into account.
     val delta = position - origin
-    val horizontal = size.x / FreeformConstants.GridHorizontalCellCount
-    val vertical = size.y / FreeformConstants.GridVerticalCellCount
+    val horizontal = size.x / GridHorizontalCellCount
+    val vertical = size.y / GridVerticalCellCount
 
     val horizontalCount = ((delta.x + cellSize.x / 2) / horizontal).toInt()
-        .coerceIn(0, FreeformConstants.GridHorizontalCellCount - 1)
+        .coerceIn(0, GridHorizontalCellCount - 1)
     val verticalCount = ((delta.y + cellSize.y / 2) / vertical).toInt()
-        .coerceIn(0, FreeformConstants.GridVerticalCellCount - 1)
+        .coerceIn(0, GridVerticalCellCount - 1)
 
-    return FreeformConstants.GridHorizontalCellCount * verticalCount + horizontalCount
+    return GridHorizontalCellCount * verticalCount + horizontalCount
 }
 
 @Composable
@@ -117,12 +150,38 @@ fun Pane(modifier: Modifier = Modifier) {
                 val color = if (model.open != null) Color.StickiesFakeWhite
                 else contentColorFor(color = MaterialTheme.colors.surface)
 
+                // Placeholder-specific drag information.
+                val (drag, setDrag) = remember { mutableStateOf(NotDragging()) }
+                val position = drag.position ?: restOffset(index)
+
                 Placeholder(
                     title = category.title,
                     asset = vectorResource(id = category.icon),
                     color = animate(color),
+                    longPressDragObserver = object : LongPressDragObserver {
+                        override fun onDragStart() {
+                            setDrag(Dragging(position))
+                        }
+
+                        override fun onDrag(dragDistance: Offset): Offset {
+                            setDrag(Dragging(position + dragDistance))
+                            return dragDistance
+                        }
+
+                        override fun onStop(velocity: Offset) {
+                            if (!model.isOpen) {
+                                setModel(model.swapCategories(index, dropIndex(position)))
+                            }
+                            setDrag(NotDragging())
+                        }
+                    },
                     modifier = Modifier
-                        .offset(animate(restOffset(index)))
+                        .offset(
+                            animate(
+                                position,
+                                spring(dampingRatio = 0.85f, Spring.StiffnessLow)
+                            )
+                        )
                         .clickable(onClick = {
                             if (!model.isOpen) {
                                 setModel(model.swapCategories(index, 0))
@@ -133,110 +192,68 @@ fun Pane(modifier: Modifier = Modifier) {
             }
         }
 
-        val piles = model.stickies.groupBy { it.categoryIndex }.toList()
+        // Prepare pile information.
+        val pileIndex = IntArray(GridVerticalCellCount * GridHorizontalCellCount) { -1 }
+        val pileSize = IntArray(GridVerticalCellCount * GridHorizontalCellCount)
+        for ((_, sticky) in model.stickies) {
+            pileSize[sticky.category] += 1
+        }
 
-        // Render all the sticky piles.
-        for ((_, stickies) in piles) {
+        // Iterate over all the stickies, in their position order..
+        for ((_, sticky) in model.stickies.asIterable().sortedByDescending { it.value.pileIndex }) {
+            key(sticky.identifier) {
 
-            // Render, for each category, all of the involved stickies.
-            stickies.fastForEachIndexedReversed { stiIndex, sticky ->
-                key(sticky.sticky.identifier) {
+                // Sticky-specific drag state persistence.
+                val (drag, setDrag) = remember { mutableStateOf(NotDragging()) }
 
-                    // TODO : Investigate if there is a nicer way to fix that.
-                    //
-                    // Reset the drag offset each time we're actually starting or stopping drag
-                    // events. This is an ugly way to make sure that drag state is preserved and
-                    // memoized locally, and that gestures across multiple stickies are actually
-                    // possible.
-                    val (dragOffset, setDragOffset) = remember(sticky.dragState.position != null) {
-                        mutableStateOf(sticky.dragState.position)
-                    }
+                // Piles count are incremented by one.
+                pileIndex[sticky.category] += 1
 
-                    val catIndex = sticky.categoryIndex
-                    val stickyRestOffset = when {
-                        // TODO : Change this.
-                        model.open == sticky.categoryIndex -> origin + Offset(
-                            (size.x - cellSize.x) / 2,
-                            (size.y - cellSize.y) / 2,
-                        )
-                        model.isOpen -> hiddenOffset(catIndex)
-                        else -> restOffset(catIndex)
-                    }
-                    val position = when {
-                        dragOffset != null -> dragOffset
-                        else -> stickyRestOffset
-                    }
+                // Information related to whether the sticker is open or not.
+                val isSelfOpen = model.open == sticky.category
+                val isAnyOpen = model.isOpen
 
-                    val isSelfOpen = model.open == catIndex
-                    val isAnyOpen = model.isOpen
-
-                    FreeformSticky(
-                        bubbled = sticky.sticky.highlighted,
-                        dragged = dragOffset != null,
-                        offset = position,
-                        title = sticky.sticky.title,
-                        color = sticky.sticky.color,
-                        pileIndex = stiIndex,
-                        pileSize = stickies.size,
-                        onClick = {
-                            if (isSelfOpen) {
-                                setModel(model.copy(open = null))
-                            } else {
-                                setModel(model.copy(open = catIndex))
-                            }
-                        },
-                        onDragStarted = {
-                            if (isSelfOpen || !isAnyOpen) {
-                                setModel(
-                                    model.updateStickyDrag(
-                                        sticky.sticky.identifier,
-                                        Dragging(position)
-                                    )
-                                )
-                                setDragOffset(position)
-                            }
-                        },
-                        onDragStopped = {
-                            when {
-                                !isAnyOpen -> {
-                                    setModel(
-                                        model
-                                            .move(sticky.sticky.identifier, dropIndex(position))
-                                            .updateStickyDrag(
-                                                sticky.sticky.identifier,
-                                                NotDragging()
-                                            )
-                                    )
-                                    // TODO : Maybe we can get rid of that somehow.
-                                    setDragOffset(null)
-                                }
-                                else -> {
-                                    setModel(
-                                        model.updateStickyDrag(
-                                            sticky.sticky.identifier,
-                                            NotDragging()
-                                        )
-                                    )
-                                    // TODO : Maybe we can get rid of that somehow.
-                                    setDragOffset(null)
-                                }
-                            }
-                        },
-                        onDragOffset = { offset ->
-                            if (sticky.dragState.isDragging) {
-                                // TODO : Maybe we can get rid of that somehow.
-                                setDragOffset(offset + position)
-                                setModel(
-                                    // Supposition : we do not always get the latest position.
-                                    model.updateStickyDrag(
-                                        sticky.sticky.identifier,
-                                        Dragging(position + offset)
-                                    )
-                                )
-                            }
-                        },
-                    )
+                // Sticky offset.
+                val stickyRestOffset = when {
+                    model.open == sticky.category -> detailOffset(pileIndex[sticky.category])
+                    model.isOpen -> hiddenOffset(index = sticky.category, open = model.open ?: 0)
+                    else -> restOffset(sticky.category)
                 }
+                val position = drag.position ?: stickyRestOffset
+
+                FreeformSticky(
+                    detailed = isSelfOpen,
+                    bubbled = sticky.highlighted,
+                    dragged = drag.isDragging,
+                    offset = position,
+                    title = sticky.title,
+                    color = sticky.color,
+                    pileIndex = pileIndex[sticky.category],
+                    pileSize = pileSize[sticky.category],
+                    onClick = {
+                        if (isSelfOpen) {
+                            setModel(model.copy(open = null))
+                        } else {
+                            setModel(model.copy(open = sticky.category))
+                        }
+                    },
+                    onDragStarted = {
+                        if (isSelfOpen || !isAnyOpen) {
+                            setDrag(Dragging(position))
+                        }
+                    },
+                    onDragStopped = {
+                        setDrag(NotDragging())
+                        if (!isAnyOpen) {
+                            setModel(model.move(sticky.identifier, dropIndex(position)))
+                        }
+                    },
+                    onDragOffset = { offset ->
+                        if (drag.isDragging) {
+                            setDrag(Dragging(position + offset))
+                        }
+                    },
+                )
             }
         }
     }
@@ -253,7 +270,6 @@ fun Pane(modifier: Modifier = Modifier) {
  * @param title the [String] content of the sticky.
  * @param color the [Color] used for the sticky surface.
  * @param pileIndex what's the index of this sticky in its pile
- * @param pileSize how many items are in this sticky pile.
  * @param onDragStarted called when a drag gesture starts on the sticky.
  * @param onDragOffset called when a drag gesture moves on the sticky.
  * @param onDragStopped called when a drag gesture stops on the sticky.
@@ -262,6 +278,7 @@ fun Pane(modifier: Modifier = Modifier) {
  */
 @Composable
 private fun FreeformSticky(
+    detailed: Boolean,
     bubbled: Boolean,
     dragged: Boolean,
     offset: Offset,
@@ -330,11 +347,23 @@ private fun FreeformSticky(
                     }
                 })
                 .drawLayer(
-                    rotationZ = animate(PileAngles[pileIndex % PileAngles.size]),
+                    rotationZ = animate(
+                        if (detailed) 0f
+                        else PileAngles[pileIndex % PileAngles.size],
+                        spring,
+                    ),
                     transformOrigin = TransformOrigin.Center,
                 ).offset(
-                    x = animate(PileOffsetX[pileIndex % PileOffsetX.size]),
-                    y = animate(PileOffsetY[pileIndex % PileOffsetY.size]),
+                    x = animate(
+                        if (detailed) PileOffsetX[pileIndex % PileOffsetX.size]
+                        else 0.dp,
+                        dpSpring,
+                    ),
+                    y = animate(
+                        if (detailed) PileOffsetY[pileIndex % PileOffsetY.size]
+                        else 0.dp,
+                        dpSpring,
+                    ),
                 )
         )
     }

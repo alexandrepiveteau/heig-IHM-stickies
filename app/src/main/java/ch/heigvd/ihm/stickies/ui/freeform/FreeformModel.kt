@@ -3,15 +3,28 @@ package ch.heigvd.ihm.stickies.ui.freeform
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
 import ch.heigvd.ihm.stickies.R
-import ch.heigvd.ihm.stickies.model.Sticky
 import ch.heigvd.ihm.stickies.ui.*
 import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentHashMapOf
 import kotlinx.collections.immutable.toPersistentList
 
-data class FreeformSticky(
-    val categoryIndex: Int,
-    val sticky: Sticky,
-    val dragState: DragState,
+inline class StickyIdentifier(
+    val backing: Long,
+)
+
+data class Sticky(
+    // Unique identification.
+    val identifier: StickyIdentifier,
+
+    // Position information.
+    val category: Int,
+    val pileIndex: Long,
+
+    // Sticky properties.
+    val color: Color,
+    val title: String,
+    val highlighted: Boolean,
 )
 
 data class FreeformCategory(
@@ -21,7 +34,8 @@ data class FreeformCategory(
 
 data class FreeformModel(
     val categories: PersistentList<FreeformCategory>,
-    val stickies: PersistentList<FreeformSticky>,
+    val stickies: PersistentMap<StickyIdentifier, Sticky>,
+    private val nextHeight: Long = stickies.size.toLong() + 1,
     val open: Int?,
 ) {
 
@@ -41,16 +55,14 @@ data class FreeformModel(
      * @return the new [FreeformModel].
      */
     fun swapCategories(first: Int, second: Int): FreeformModel {
-        val stickies = this.stickies.asSequence()
-            .map {
-                when (it.categoryIndex) {
-                    first -> it.copy(categoryIndex = second)
-                    second -> it.copy(categoryIndex = first)
-                    else -> it
-                }
+        var stickies = persistentHashMapOf<StickyIdentifier, Sticky>()
+        for ((key, value) in this.stickies) {
+            stickies = when (value.category) {
+                first -> stickies.put(key, value.copy(category = second))
+                second -> stickies.put(key, value.copy(category = first))
+                else -> stickies.put(key, value)
             }
-            .asIterable()
-            .toPersistentList()
+        }
 
         val catA = categories[first]
         val catB = categories[second]
@@ -62,68 +74,74 @@ data class FreeformModel(
         return copy(categories = categories, stickies = stickies)
     }
 
-    fun move(identifier: Long, toPile: Int): FreeformModel {
-        val index = this.stickies.indexOfFirst { it.sticky.identifier == identifier }
-        val sticky = this.stickies[index].copy(categoryIndex = toPile)
+    /**
+     * Moves the sticky with the provided [StickyIdentifier] to the pile with the given index.
+     *
+     * @param toPile the pile to which the sticky is moved.
+     */
+    fun move(
+        identifier: StickyIdentifier,
+        toPile: Int,
+    ): FreeformModel {
+        val sticky = (this.stickies[identifier] ?: error("Missing sticky."))
+            .copy(category = toPile, pileIndex = nextHeight)
         return this.copy(
-            stickies = stickies.removeAt(index).add(0, sticky)
-        )
-    }
-
-    fun updateStickyDrag(identifier: Long, state: DragState): FreeformModel {
-        val index = this.stickies.indexOfFirst { it.sticky.identifier == identifier }
-        return this.copy(
-            stickies = stickies.set(
-                index,
-                stickies[index].copy(
-                    dragState = state,
-                ),
-            )
+            stickies = this.stickies.remove(identifier).put(identifier, sticky),
+            nextHeight = nextHeight + 1,
         )
     }
 }
 
 // TODO : REMOVE THIS EXAMPLE DATA
 
-val ExamplePileA: List<Sticky> = emptyList()
-
-val ExamplePileB: List<Sticky> = listOf(
-    Sticky(21, Color.StickiesYellow, "Buy some bread\n\n-Whole grain\n-Without raisins", true),
-    Sticky(22, Color.StickiesBlue, "", false),
-    Sticky(23, Color.StickiesPink, "", false),
-    Sticky(24, Color.StickiesOrange, "", false)
-)
-
-val ExamplePileC: List<Sticky> = listOf(
+private val ExamplePileB: List<Sticky> = listOf(
     Sticky(
-        31,
-        Color.StickiesOrange,
-        "Take all my pills for the day :\n\n-Aspirin\n-Lotensin",
-        true
+        identifier = StickyIdentifier(1),
+        category = 1,
+        pileIndex = 0,
+        color = Color.StickiesPink,
+        title = "Buy some bread\n" +
+                "\n" +
+                "-Whole grain\n" +
+                "-Without raisins",
+        highlighted = false
     ),
+    Sticky(
+        identifier = StickyIdentifier(2),
+        category = 1,
+        pileIndex = 1,
+        color = Color.StickiesYellow,
+        title = "Buy some bread\n" +
+                "\n" +
+                "-Whole grain\n" +
+                "-Without raisins",
+        highlighted = false
+    ),
+    Sticky(
+        identifier = StickyIdentifier(3),
+        category = 1,
+        pileIndex = 2,
+        color = Color.StickiesYellow,
+        title = "Buy some bread\n" +
+                "\n" +
+                "-Whole grain\n" +
+                "-Without raisins",
+        highlighted = false
+    ),
+    Sticky(
+        identifier = StickyIdentifier(4),
+        category = 1,
+        pileIndex = 3,
+        color = Color.StickiesYellow,
+        title = "Buy some bread\n" +
+                "\n" +
+                "-Whole grain\n" +
+                "-Without raisins",
+        highlighted = false
+    )
 )
 
-val ExamplePileD: List<Sticky> = listOf(
-    Sticky(41, Color.StickiesOrange, "Dentist at 10 am", true),
-    Sticky(42, Color.StickiesBlue, "", false),
-    Sticky(43, Color.StickiesYellow, "", false),
-)
-
-val ExamplePileE: List<Sticky> = listOf(
-    Sticky(51, Color.StickiesGreen, "Walk around the block\n(use a face mask)", false),
-)
-
-val ExamplePileF: List<Sticky> = listOf(
-    Sticky(61, Color.StickiesYellow, "Take Medor to the vet", true),
-    Sticky(62, Color.StickiesBlue, "", false),
-    Sticky(63, Color.StickiesPink, "", false)
-)
-
-private fun List<Sticky>.toFreeform(category: Int): List<FreeformSticky> {
-    return map { FreeformSticky(category, it, NotDragging()) }
-}
-
-val categories = listOf(
+private val categories = listOf(
     FreeformCategory("Inbox", R.drawable.ic_category_inbox),
     FreeformCategory("Groceries", R.drawable.ic_category_basket),
     FreeformCategory("Medical Stuff", R.drawable.ic_category_medical),
@@ -132,15 +150,16 @@ val categories = listOf(
     FreeformCategory("Medor", R.drawable.ic_category_bone),
 )
 
+private fun build(): PersistentMap<StickyIdentifier, Sticky> {
+    var items = persistentHashMapOf<StickyIdentifier, Sticky>()
+    for (sticky in ExamplePileB) {
+        items = items.put(sticky.identifier, sticky)
+    }
+    return items
+}
+
 val initialModel = FreeformModel(
     categories = categories.toPersistentList(),
-    stickies = listOf(
-        ExamplePileA.toFreeform(0),
-        ExamplePileB.toFreeform(1),
-        ExamplePileC.toFreeform(2),
-        ExamplePileD.toFreeform(3),
-        ExamplePileE.toFreeform(4),
-        ExamplePileF.toFreeform(5),
-    ).flatten().toPersistentList(),
+    stickies = build(),
     open = null,
 )

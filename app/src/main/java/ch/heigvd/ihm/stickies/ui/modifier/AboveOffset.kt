@@ -6,6 +6,10 @@ import androidx.compose.ui.MeasureScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Constraints
 
+/**
+ * A [LayoutModifier] that displays an item right above its standard top line. This can be used to
+ * decorate a view, when combined with a standard position at the top start.
+ */
 fun Modifier.aboveOffset(): Modifier = this.then(AboveOffset())
 
 private class AboveOffset : LayoutModifier {

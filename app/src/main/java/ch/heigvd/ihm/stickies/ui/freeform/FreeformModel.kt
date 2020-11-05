@@ -110,7 +110,7 @@ private val ExamplePileB: List<Sticky> = listOf(
         identifier = StickyIdentifier(2),
         category = 1,
         pileIndex = 1,
-        color = Color.StickiesYellow,
+        color = Color.StickiesBlue,
         title = "Buy some bread\n" +
                 "\n" +
                 "-Whole grain\n" +
@@ -133,6 +133,39 @@ private val ExamplePileB: List<Sticky> = listOf(
         category = 1,
         pileIndex = 3,
         color = Color.StickiesYellow,
+        title = "Buy some bread\n" +
+                "\n" +
+                "-Whole grain\n" +
+                "-Without raisins",
+        highlighted = false
+    ),
+    Sticky(
+        identifier = StickyIdentifier(5),
+        category = 1,
+        pileIndex = 3,
+        color = Color.StickiesGreen,
+        title = "Buy some bread\n" +
+                "\n" +
+                "-Whole grain\n" +
+                "-Without raisins",
+        highlighted = false
+    ),
+    Sticky(
+        identifier = StickyIdentifier(6),
+        category = 1,
+        pileIndex = 3,
+        color = Color.StickiesOrange,
+        title = "Buy some bread\n" +
+                "\n" +
+                "-Whole grain\n" +
+                "-Without raisins",
+        highlighted = false
+    ),
+    Sticky(
+        identifier = StickyIdentifier(7),
+        category = 1,
+        pileIndex = 3,
+        color = Color.StickiesBlue,
         title = "Buy some bread\n" +
                 "\n" +
                 "-Whole grain\n" +

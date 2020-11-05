@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.TransformOrigin
 import androidx.compose.ui.drawLayer
+import androidx.compose.ui.gesture.LongPressDragObserver
+import androidx.compose.ui.gesture.longPressDragGestureFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.VectorAsset
 import androidx.compose.ui.res.vectorResource
@@ -43,6 +45,7 @@ fun Placeholder(
     title: String,
     asset: VectorAsset,
     modifier: Modifier = Modifier,
+    longPressDragObserver: LongPressDragObserver = object : LongPressDragObserver {},
     color: Color = contentColorFor(MaterialTheme.colors.surface),
 ) {
     val ambient = color.copy(alpha = 0.2f)
@@ -57,6 +60,7 @@ fun Placeholder(
                 Modifier
                     .align(Alignment.TopStart)
                     .aboveOffset()
+                    .longPressDragGestureFilter(longPressDragObserver)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

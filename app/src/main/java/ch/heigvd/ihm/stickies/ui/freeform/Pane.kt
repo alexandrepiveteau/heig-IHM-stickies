@@ -150,17 +150,36 @@ fun Pane(modifier: Modifier = Modifier) {
                 val color = if (model.open != null) Color.StickiesFakeWhite
                 else contentColorFor(color = MaterialTheme.colors.surface)
 
+                // Placeholder-specific drag information.
+                val (drag, setDrag) = remember { mutableStateOf(NotDragging()) }
+                val position = drag.position ?: restOffset(index)
+
                 Placeholder(
                     title = category.title,
                     asset = vectorResource(id = category.icon),
                     color = animate(color),
+                    longPressDragObserver = object : LongPressDragObserver {
+                        override fun onDragStart() {
+                            setDrag(Dragging(position))
+                        }
+
+                        override fun onDrag(dragDistance: Offset): Offset {
+                            setDrag(Dragging(position + dragDistance))
+                            return dragDistance
+                        }
+
+                        override fun onStop(velocity: Offset) {
+                            if (!model.isOpen) {
+                                setModel(model.swapCategories(index, dropIndex(position)))
+                            }
+                            setDrag(NotDragging())
+                        }
+                    },
                     modifier = Modifier
                         .offset(
                             animate(
-                                restOffset(index), spring(
-                                    dampingRatio = 0.85f,
-                                    stiffness = Spring.StiffnessLow,
-                                )
+                                position,
+                                spring(dampingRatio = 0.85f, Spring.StiffnessLow)
                             )
                         )
                         .clickable(onClick = {

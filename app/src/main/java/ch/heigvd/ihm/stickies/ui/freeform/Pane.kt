@@ -52,10 +52,8 @@ import ch.heigvd.ihm.stickies.ui.stickies.*
 fun Pane(modifier: Modifier = Modifier) {
     // Set the initial model.
     var model by remember { mutableStateOf(initialModel) }
-    val (dragged, setDragged) = remember { mutableStateOf(emptySet<StickyIdentifier>()) }
-    val (changeCategoryOverlayStart, setChangeCategoryOverlayStart) = remember {
-        mutableStateOf<Pair<StickyIdentifier, Long>?>(null)
-    }
+    var dragged by remember { mutableStateOf(emptySet<StickyIdentifier>()) }
+    var overlayStickyToTime by remember { mutableStateOf<Pair<StickyIdentifier, Long>?>(null) }
 
     Freeform(
         modifier
@@ -209,13 +207,13 @@ fun Pane(modifier: Modifier = Modifier) {
                         }
                     },
                     onDragStarted = {
-                        setDragged(dragged + sticky.identifier)
+                        dragged = dragged + sticky.identifier
                         if (isSelfOpen || !isAnyOpen) {
                             setDrag(Dragging(position))
                         }
                     },
                     onDragStopped = {
-                        setDragged(dragged - sticky.identifier)
+                        dragged = dragged - sticky.identifier
                         setDrag(NotDragging())
                         if (!isAnyOpen) {
                             model = model.move(sticky.identifier, dropIndex(position))
@@ -227,25 +225,22 @@ fun Pane(modifier: Modifier = Modifier) {
                             if (isSelfOpen) {
                                 // 700ms overlay delay for dropping on the change category.
                                 if (dropIndex(position + offset) == 0) {
-                                    if (changeCategoryOverlayStart == null) {
-                                        setChangeCategoryOverlayStart(
+                                    val stickyToTime = overlayStickyToTime
+                                    if (stickyToTime == null) {
+                                        overlayStickyToTime =
                                             sticky.identifier to System.currentTimeMillis()
-                                        )
                                     } else {
-                                        val delta = System.currentTimeMillis() -
-                                                changeCategoryOverlayStart.second
-                                        if (delta > 700L &&
-                                            changeCategoryOverlayStart.first == sticky.identifier
-                                        ) {
-                                            setChangeCategoryOverlayStart(null)
+                                        val delta = System.currentTimeMillis() - stickyToTime.second
+                                        if (delta > 700L && stickyToTime.first == sticky.identifier) {
+                                            overlayStickyToTime = null
                                             detailScroll = NoScroll()
                                             model = model.copy(open = null)
                                         }
                                     }
                                 } else {
                                     // We are not overlaying.
-                                    if (changeCategoryOverlayStart?.first == sticky.identifier) {
-                                        setChangeCategoryOverlayStart(null)
+                                    if (overlayStickyToTime?.first == sticky.identifier) {
+                                        overlayStickyToTime = null
                                     }
                                 }
                             }

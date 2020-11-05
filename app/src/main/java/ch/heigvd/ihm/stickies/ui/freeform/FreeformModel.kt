@@ -36,14 +36,37 @@ data class FreeformModel(
     val categories: PersistentList<FreeformCategory>,
     val stickies: PersistentMap<StickyIdentifier, Sticky>,
     private val nextHeight: Long = stickies.size.toLong() + 1,
-    val open: Int?,
+    private val open: Int?,
 ) {
 
     /**
      * Returns true if a certain category is currently open.
      */
-    val isOpen: Boolean
+    val categoryOpen: Boolean
         get() = open != null
+
+    /**
+     * Returns the index of the currently opened category.
+     */
+    val categoryOpenIndex: Int?
+        get() = open
+
+    /**
+     * Opens an existing category for the provided index. If another category was previously
+     * opened, the current category will be closed.
+     *
+     * @param index the category to open.
+     */
+    fun categoryOpen(index: Int): FreeformModel {
+        return copy(open = index)
+    }
+
+    /**
+     * Closes the currently opened category.
+     */
+    fun categoryClose(): FreeformModel {
+        return copy(open = null)
+    }
 
     /**
      * Swaps two piles with indices [first] and [second]. If the indices are identical (and within
@@ -54,7 +77,7 @@ data class FreeformModel(
      *
      * @return the new [FreeformModel].
      */
-    fun swapCategories(first: Int, second: Int): FreeformModel {
+    fun categorySwap(first: Int, second: Int): FreeformModel {
         var stickies = persistentHashMapOf<StickyIdentifier, Sticky>()
         for ((key, value) in this.stickies) {
             stickies = when (value.category) {
@@ -79,7 +102,7 @@ data class FreeformModel(
      *
      * @param toPile the pile to which the sticky is moved.
      */
-    fun move(
+    fun stickyMoveToTop(
         identifier: StickyIdentifier,
         toPile: Int,
     ): FreeformModel {

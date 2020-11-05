@@ -104,10 +104,12 @@ fun FreeformScope.dropIndex(
  * @return a pixel scroll amount that can not be exceeded.
  */
 fun FreeformScope.scrollableHeight(model: FreeformModel): Float {
-    return if (model.open == null) {
+    return if (!model.categoryOpen) {
         0f
     } else {
-        val count = model.stickies.count { (_, sticky) -> sticky.category == model.open }
+        val count = model.stickies.count { (_, sticky) ->
+            sticky.category == model.categoryOpenIndex
+        }
         val rows = (count / 2) + 1
         val requiredHeight = spacer.y + rows * (spacer.y + cellSize.y)
         maxOf(0f, requiredHeight - size.y)

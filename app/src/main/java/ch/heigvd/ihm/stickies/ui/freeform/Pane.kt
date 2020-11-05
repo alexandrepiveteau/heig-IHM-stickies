@@ -82,7 +82,7 @@ fun Pane(modifier: Modifier = Modifier) {
         )
 
         // Render the category details placeholders, as needed.
-        val showDetailOptions = model.isOpen && dragged.isNotEmpty()
+        val showDetailOptions = model.categoryOpen && dragged.isNotEmpty()
         Placeholder(
             title = "Change category",
             asset = vectorResource(R.drawable.ic_category_action_move),
@@ -111,7 +111,7 @@ fun Pane(modifier: Modifier = Modifier) {
         // Render all the category placeholders.
         model.categories.fastForEachIndexed { index, category ->
             key(category) {
-                val color = if (model.open != null) Color.StickiesFakeWhite
+                val color = if (model.categoryOpen) Color.StickiesFakeWhite
                 else contentColorFor(color = MaterialTheme.colors.surface)
                 val spring = spring<Offset>(dampingRatio = 0.85f, Spring.StiffnessLow)
 
@@ -138,8 +138,8 @@ fun Pane(modifier: Modifier = Modifier) {
                         }
 
                         override fun onStop(velocity: Offset) {
-                            if (!model.isOpen) {
-                                model = model.swapCategories(index, dropIndex(position))
+                            if (!model.categoryOpen) {
+                                model = model.categorySwap(index, dropIndex(position))
                             }
                             setDrag(NotDragging())
                         }
@@ -173,18 +173,17 @@ fun Pane(modifier: Modifier = Modifier) {
                 pileIndex[sticky.category] += 1
 
                 // Information related to whether the sticker is open or not.
-                val isSelfOpen = model.open == sticky.category
-                val isAnyOpen = model.isOpen
+                val isSelfOpen = model.categoryOpenIndex == sticky.category
 
                 // Sticky offset.
                 val stickyRestOffset = when {
-                    model.open == sticky.category -> detail(
+                    model.categoryOpenIndex == sticky.category -> detail(
                         index = pileIndex[sticky.category],
                         scroll = detailScroll
                     )
-                    model.isOpen -> hidden(
+                    model.categoryOpen -> hidden(
                         index = sticky.category,
-                        open = model.open ?: 0
+                        open = model.categoryOpenIndex ?: 0
                     )
                     else -> rest(index = sticky.category)
                 }
@@ -202,23 +201,23 @@ fun Pane(modifier: Modifier = Modifier) {
                     onClick = {
                         if (isSelfOpen) {
                             detailScroll = NoScroll()
-                            model = model.copy(open = null)
+                            model = model.categoryClose()
                         } else {
                             detailScroll = NoScroll()
-                            model = model.copy(open = sticky.category)
+                            model = model.categoryOpen(sticky.category)
                         }
                     },
                     onDragStarted = {
                         dragged = dragged + sticky.identifier
-                        if (isSelfOpen || !isAnyOpen) {
+                        if (isSelfOpen || !model.categoryOpen) {
                             setDrag(Dragging(position))
                         }
                     },
                     onDragStopped = {
                         dragged = dragged - sticky.identifier
                         setDrag(NotDragging())
-                        if (!isAnyOpen) {
-                            model = model.move(sticky.identifier, dropIndex(position))
+                        if (!model.categoryOpen) {
+                            model = model.stickyMoveToTop(sticky.identifier, dropIndex(position))
                         }
                     },
                     onDragOffset = { offset ->
@@ -236,7 +235,7 @@ fun Pane(modifier: Modifier = Modifier) {
                                         if (delta > 700L && stickyToTime.first == sticky.identifier) {
                                             draggedForMove = null
                                             detailScroll = NoScroll()
-                                            model = model.copy(open = null)
+                                            model = model.categoryClose()
                                         }
                                     }
                                 } else {

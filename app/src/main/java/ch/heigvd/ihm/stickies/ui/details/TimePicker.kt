@@ -3,14 +3,13 @@ package ch.heigvd.ihm.stickies.ui.details
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.Typeface
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Text
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
+import androidx.compose.foundation.lazy.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -19,8 +18,8 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
-import ch.heigvd.ihm.stickies.ui.StickiesBlue
 import java.time.LocalTime
 import kotlin.math.PI
 import kotlin.math.cos
@@ -29,33 +28,71 @@ import kotlin.random.Random
 
 @Composable
 fun TimePicker(
-        time: LocalTime,
-        onClick: (LocalTime) -> Unit,
+        time: LocalTime = LocalTime.now(),
         modifier: Modifier = Modifier,
 ) {
     Row(modifier) {
-        Button(onClick = {
-            val minute = time.minute % 60
-            val hour = (time.hour + 1) % 24
-            onClick(LocalTime.of(hour, minute))
-        })
-        {
-            Text("${time.hour}")
-        }
+        val hours = (0..23).distinct()
+        val hoursState = rememberLazyListState(initialFirstVisibleItemIndex = time.hour - 2)
 
-        Button(onClick = {
-            val incHour = time.minute + 1 == 60
-            val minute = (time.minute + 1) % 60
-            val hour = if (incHour) {
-                (time.hour + 1) % 24
-            } else {
-                time.hour % 24
-            }
-            onClick(LocalTime.of(hour, minute))
-        })
-        {
-            Text("${time.minute}")
-        }
+        val minutes = (0..59).distinct()
+        val minutesState = rememberLazyListState(initialFirstVisibleItemIndex = time.minute - 2)
+
+        Clock(
+                time = LocalTime.of(hoursState.firstVisibleItemIndex + 2, minutesState.firstVisibleItemIndex + 2),
+                modifier = modifier,
+        )
+
+        NumberPicker(
+                numbers = hours,
+                state = hoursState,
+                modifier = modifier.height(260.dp)
+        )
+
+        NumberPicker(
+                numbers = minutes,
+                state = minutesState,
+                modifier = modifier.height(260.dp)
+        )
+    }
+}
+/*
+Button(onClick = {
+    val minute = time.minute % 60
+    val hour = (time.hour + 1) % 24
+    onClick(LocalTime.of(hour, minute))
+})
+{
+    Text("${time.hour}")
+}
+
+Button(onClick = {
+    val incHour = time.minute + 1 == 60
+    val minute = (time.minute + 1) % 60
+    val hour = if (incHour) {
+        (time.hour + 1) % 24
+    } else {
+        time.hour % 24
+    }
+    onClick(LocalTime.of(hour, minute))
+})
+{
+    Text("${time.minute}")
+}
+ */
+
+@Composable
+fun NumberPicker(
+        numbers: List<Int>,
+        state: LazyListState,
+        modifier: Modifier = Modifier,
+) {
+    LazyColumnFor(
+            items = numbers,
+            modifier = modifier,
+            state = state,
+    ) {
+        Text("%02d".format(it), fontSize = 40.sp)
     }
 }
 
@@ -121,8 +158,8 @@ fun Clock(
         drawIntoCanvas { canvas ->
             // Text styling.
             val paint = Paint()
-            paint.setTextSize(textSize)
-            paint.setTypeface(Typeface.DEFAULT_BOLD)
+            paint.textSize = textSize
+            paint.typeface = Typeface.DEFAULT_BOLD
             paint.isAntiAlias = true
             paint.color = Color(0xFF262626).toArgb()
 
@@ -177,15 +214,9 @@ fun Clock(
 @Composable
 @Preview
 private fun TimePickerPreview() {
-    Column(Modifier.background(Color.White)) {
-        val (time, setTime) =
-                remember { mutableStateOf(LocalTime.of(Random.nextInt(0, 23), Random.nextInt(0, 59))) }
+    Row(Modifier.background(Color.White)) {
         TimePicker(
-                time = time,
-                onClick = setTime,
-        )
-        Clock(
-                time = time,
+                modifier = Modifier.align(alignment = Alignment.CenterVertically),
         )
     }
 }

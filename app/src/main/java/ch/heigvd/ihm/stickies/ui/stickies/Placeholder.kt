@@ -44,11 +44,11 @@ fun PlaceholderTitle(
     title: String,
     asset: VectorAsset,
     modifier: Modifier = Modifier,
-    color: Color = AmbientContentColor.current,
+    color: Color = AmbientContentColor.current.copy(alpha = 0.2f),
     longPressDragObserver: LongPressDragObserver = object : LongPressDragObserver {},
     content: @Composable BoxScope.() -> Unit,
 ) {
-    Providers(AmbientContentColor provides color.copy(alpha = 0.2f)) {
+    Providers(AmbientContentColor provides color) {
         Box(modifier, Alignment.Center) {
             Column(
                 Modifier
@@ -76,9 +76,9 @@ fun Placeholder(
     title: String,
     asset: VectorAsset,
     modifier: Modifier = Modifier,
-    color: Color = contentColorFor(MaterialTheme.colors.surface),
+    color: Color = contentColorFor(MaterialTheme.colors.surface).copy(alpha = 0.2f),
 ) {
-    Providers(AmbientContentColor provides color.copy(alpha = 0.2f)) {
+    Providers(AmbientContentColor provides color) {
         Box(
             modifier = modifier
                 .border(4.dp, AmbientContentColor.current, RoundedCornerShape(32.dp))

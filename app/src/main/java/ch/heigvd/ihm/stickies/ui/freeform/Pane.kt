@@ -27,7 +27,9 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.zIndex
+import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
+import ch.heigvd.ihm.stickies.ui.StickiesNicerRed
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridHorizontalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridVerticalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileAngles
@@ -142,6 +144,28 @@ fun Pane(modifier: Modifier = Modifier) {
 
         // Set the initial model.
         val (model, setModel) = remember { mutableStateOf(initialModel) }
+        val (dragged, setDragged) = remember { mutableStateOf(emptySet<StickyIdentifier>()) }
+
+        // Render the category details placeholders, as needed.
+        val showDetailOptions = model.isOpen && dragged.isNotEmpty()
+        Placeholder(
+            title = "Change category",
+            asset = vectorResource(R.drawable.ic_category_action_move),
+            color = animate(
+                if (showDetailOptions) contentColorFor(MaterialTheme.colors.surface).copy(alpha = 0.2f)
+                else Color.StickiesFakeWhite
+            ),
+            modifier = Modifier.offset(restOffset(0))
+        )
+        Placeholder(
+            title = "Delete forever",
+            asset = vectorResource(R.drawable.ic_category_action_trash),
+            color = animate(
+                if (showDetailOptions) Color.StickiesNicerRed
+                else Color.StickiesFakeWhite
+            ),
+            modifier = Modifier.offset(restOffset(GridHorizontalCellCount))
+        )
 
         // Render all the category placeholders.
         model.categories.fastForEachIndexed { index, category ->
@@ -158,7 +182,7 @@ fun Pane(modifier: Modifier = Modifier) {
                 PlaceholderTitle(
                     title = category.title,
                     asset = vectorResource(category.icon),
-                    color = animate(color),
+                    color = animate(color).copy(alpha = 0.2f),
                     modifier = Modifier.offset(animate(position, spring)),
                     longPressDragObserver = object : LongPressDragObserver {
                         override fun onDragStart() = setDrag(Dragging(position))
@@ -180,7 +204,7 @@ fun Pane(modifier: Modifier = Modifier) {
                     Placeholder(
                         title = category.title,
                         asset = vectorResource(category.icon),
-                        color = animate(color),
+                        color = animate(color).copy(alpha = 0.2f),
                     )
                 }
             }
@@ -232,11 +256,13 @@ fun Pane(modifier: Modifier = Modifier) {
                         }
                     },
                     onDragStarted = {
+                        setDragged(dragged + sticky.identifier)
                         if (isSelfOpen || !isAnyOpen) {
                             setDrag(Dragging(position))
                         }
                     },
                     onDragStopped = {
+                        setDragged(dragged - sticky.identifier)
                         setDrag(NotDragging())
                         if (!isAnyOpen) {
                             setModel(model.move(sticky.identifier, dropIndex(position)))
@@ -292,9 +318,10 @@ private fun FreeformSticky(
     } else {
         0f
     }
+    val detailedMultiplier = if (detailed) 0f else 1f
     val spring = spring(
         dampingRatio = Spring.DampingRatioLowBouncy,
-        stiffness = StickyMaxStiffness - (stiffnessStep * pileIndex),
+        stiffness = StickyMaxStiffness - (stiffnessStep * pileIndex * detailedMultiplier),
         visibilityThreshold = 0.01f,
     )
     val dpSpring = spring(

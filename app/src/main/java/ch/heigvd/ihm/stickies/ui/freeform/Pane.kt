@@ -27,7 +27,9 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.zIndex
+import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
+import ch.heigvd.ihm.stickies.ui.StickiesNicerRed
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridHorizontalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridVerticalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileAngles
@@ -142,26 +144,60 @@ fun Pane(modifier: Modifier = Modifier) {
 
         // Set the initial model.
         val (model, setModel) = remember { mutableStateOf(initialModel) }
+        val (dragged, setDragged) = remember { mutableStateOf(emptySet<StickyIdentifier>()) }
+        val (changeCategoryOverlayStart, setChangeCategoryOverlayStart) = remember {
+            mutableStateOf<Pair<StickyIdentifier, Long>?>(null)
+        }
+
+        // Render the category details placeholders, as needed.
+        val showDetailOptions = model.isOpen && dragged.isNotEmpty()
+        Placeholder(
+            title = "Change category",
+            asset = vectorResource(R.drawable.ic_category_action_move),
+            color = animate(
+                if (showDetailOptions) contentColorFor(MaterialTheme.colors.surface).copy(alpha = 0.2f)
+                else Color.Transparent
+            ),
+            background = Color.Transparent,
+            modifier = Modifier
+                .offset(restOffset(0))
+                .zIndex(3f)
+        )
+        Placeholder(
+            title = "Delete forever",
+            asset = vectorResource(R.drawable.ic_category_action_trash),
+            color = animate(
+                if (showDetailOptions) Color.StickiesNicerRed
+                else Color.Transparent
+            ),
+            background = Color.Transparent,
+            modifier = Modifier
+                .offset(restOffset(GridHorizontalCellCount))
+                .zIndex(3f)
+        )
 
         // Render all the category placeholders.
-        // TODO : Add support for draggable categories.
         model.categories.fastForEachIndexed { index, category ->
             key(category) {
                 val color = if (model.open != null) Color.StickiesFakeWhite
                 else contentColorFor(color = MaterialTheme.colors.surface)
+                val spring = spring<Offset>(dampingRatio = 0.85f, Spring.StiffnessLow)
 
                 // Placeholder-specific drag information.
+                val restOffset = restOffset(index)
                 val (drag, setDrag) = remember { mutableStateOf(NotDragging()) }
-                val position = drag.position ?: restOffset(index)
+                val position = drag.position ?: restOffset
 
-                Placeholder(
+                // Render a title that can be dragged.
+                PlaceholderTitle(
                     title = category.title,
-                    asset = vectorResource(id = category.icon),
-                    color = animate(color),
+                    asset = vectorResource(category.icon),
+                    color = animate(color).copy(alpha = 0.2f),
+                    modifier = Modifier
+                        .offset(animate(position, spring))
+                        .zIndex(if (drag.isDragging) 2f else 1f),
                     longPressDragObserver = object : LongPressDragObserver {
-                        override fun onDragStart() {
-                            setDrag(Dragging(position))
-                        }
+                        override fun onDragStart() = setDrag(Dragging(position))
 
                         override fun onDrag(dragDistance: Offset): Offset {
                             setDrag(Dragging(position + dragDistance))
@@ -175,20 +211,14 @@ fun Pane(modifier: Modifier = Modifier) {
                             setDrag(NotDragging())
                         }
                     },
-                    modifier = Modifier
-                        .offset(
-                            animate(
-                                position,
-                                spring(dampingRatio = 0.85f, Spring.StiffnessLow)
-                            )
-                        )
-                        .clickable(onClick = {
-                            if (!model.isOpen) {
-                                setModel(model.swapCategories(index, 0))
-                            }
-                        }, indication = null)
-
-                )
+                ) {
+                    // Render the actual content of the category.
+                    Placeholder(
+                        title = category.title,
+                        asset = vectorResource(category.icon),
+                        color = animate(color).copy(alpha = 0.2f),
+                    )
+                }
             }
         }
 
@@ -238,19 +268,48 @@ fun Pane(modifier: Modifier = Modifier) {
                         }
                     },
                     onDragStarted = {
+                        setDragged(dragged + sticky.identifier)
                         if (isSelfOpen || !isAnyOpen) {
                             setDrag(Dragging(position))
                         }
                     },
                     onDragStopped = {
+                        setDragged(dragged - sticky.identifier)
                         setDrag(NotDragging())
                         if (!isAnyOpen) {
-                            setModel(model.move(sticky.identifier, dropIndex(position)))
+                            setModel(
+                                model
+                                    .move(sticky.identifier, dropIndex(position))
+                            )
                         }
                     },
                     onDragOffset = { offset ->
                         if (drag.isDragging) {
                             setDrag(Dragging(position + offset))
+                            if (isSelfOpen) {
+                                // 700ms overlay delay for dropping on the change category.
+                                if (dropIndex(position + offset) == 0) {
+                                    if (changeCategoryOverlayStart == null) {
+                                        setChangeCategoryOverlayStart(
+                                            sticky.identifier to System.currentTimeMillis()
+                                        )
+                                    } else {
+                                        val delta = System.currentTimeMillis() -
+                                                changeCategoryOverlayStart.second
+                                        if (delta > 700L &&
+                                            changeCategoryOverlayStart.first == sticky.identifier
+                                        ) {
+                                            setChangeCategoryOverlayStart(null)
+                                            setModel(model.copy(open = null))
+                                        }
+                                    }
+                                } else {
+                                    // We are not overlaying.
+                                    if (changeCategoryOverlayStart?.first == sticky.identifier) {
+                                        setChangeCategoryOverlayStart(null)
+                                    }
+                                }
+                            }
                         }
                     },
                 )
@@ -298,9 +357,10 @@ private fun FreeformSticky(
     } else {
         0f
     }
+    val skipSlowdown = if (detailed || dragged) 0f else 1f
     val spring = spring(
         dampingRatio = Spring.DampingRatioLowBouncy,
-        stiffness = StickyMaxStiffness - (stiffnessStep * pileIndex),
+        stiffness = StickyMaxStiffness - (stiffnessStep * pileIndex * skipSlowdown),
         visibilityThreshold = 0.01f,
     )
     val dpSpring = spring(
@@ -313,7 +373,7 @@ private fun FreeformSticky(
         if (dragged) StickyRaisedElevation else StickyDefaultElevation,
         dpSpring,
     )
-    val base = elevation.value + ((pileSize - (pileIndex + 1)) / pileSize.toFloat()) + 1
+    val base = elevation.value + ((pileSize - (pileIndex + 1)) / pileSize.toFloat()) + 10f
     val supplement = if (dragged) 1.0f else 0f
 
     Bubble(
@@ -348,19 +408,19 @@ private fun FreeformSticky(
                 })
                 .drawLayer(
                     rotationZ = animate(
-                        if (detailed) 0f
+                        if (detailed || dragged) 0f
                         else PileAngles[pileIndex % PileAngles.size],
                         spring,
                     ),
                     transformOrigin = TransformOrigin.Center,
                 ).offset(
                     x = animate(
-                        if (detailed) PileOffsetX[pileIndex % PileOffsetX.size]
+                        if (detailed || dragged) PileOffsetX[pileIndex % PileOffsetX.size]
                         else 0.dp,
                         dpSpring,
                     ),
                     y = animate(
-                        if (detailed) PileOffsetY[pileIndex % PileOffsetY.size]
+                        if (detailed || dragged) PileOffsetY[pileIndex % PileOffsetY.size]
                         else 0.dp,
                         dpSpring,
                     ),

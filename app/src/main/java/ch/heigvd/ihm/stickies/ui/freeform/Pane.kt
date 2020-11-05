@@ -3,7 +3,8 @@ package ch.heigvd.ihm.stickies.ui.freeform
 import androidx.compose.animation.animate
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberScrollableController
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
@@ -30,7 +31,6 @@ import androidx.compose.ui.zIndex
 import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
 import ch.heigvd.ihm.stickies.ui.StickiesNicerRed
-import ch.heigvd.ihm.stickies.ui.freeform.Freeform
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridHorizontalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridVerticalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileAngles
@@ -41,7 +41,6 @@ import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.StickyMinStiffness
 import ch.heigvd.ihm.stickies.ui.modifier.offset
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.*
-import kotlin.math.abs
 
 /**
  * Calculates the offset to be applied to a cell at a certain grid index to hide it from the

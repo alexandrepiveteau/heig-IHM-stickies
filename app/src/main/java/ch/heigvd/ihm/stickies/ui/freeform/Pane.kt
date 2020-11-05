@@ -3,23 +3,23 @@ package ch.heigvd.ihm.stickies.ui.freeform
 import androidx.compose.animation.animate
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.rememberScrollableController
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.contentColorFor
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.TransformOrigin
 import androidx.compose.ui.drawLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.gesture.LongPressDragObserver
 import androidx.compose.ui.gesture.longPressDragGestureFilter
+import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.HapticFeedBackAmbient
@@ -30,6 +30,7 @@ import androidx.compose.ui.zIndex
 import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
 import ch.heigvd.ihm.stickies.ui.StickiesNicerRed
+import ch.heigvd.ihm.stickies.ui.freeform.Freeform
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridHorizontalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridVerticalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileAngles
@@ -40,6 +41,7 @@ import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.StickyMinStiffness
 import ch.heigvd.ihm.stickies.ui.modifier.offset
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.*
+import kotlin.math.abs
 
 /**
  * Calculates the offset to be applied to a cell at a certain grid index to hide it from the
@@ -70,16 +72,19 @@ private inline fun FreeformScope.hiddenOffset(
  * TODO : Provide some additional information related to scroll.
  *
  * @param index the grid index of the item to show.
+ * @param scroll how much scroll amount there currently is.
  *
  * @return the [Offset] at which the item at the index-th position should be placed.
  */
 @Suppress("NOTHING_TO_INLINE")
 private inline fun FreeformScope.detailOffset(
     index: Int,
+    scroll: ScrollState,
 ): Offset {
     val horizontalCount = index % 2
     val verticalCount = (index - horizontalCount) / 2
     val topLeading = origin +
+            Offset(x = 0f, y = -scroll.amount) +
             Offset(x = 2 * spacer.x, y = 0.5f * spacer.y) +
             Offset(x = cellSize.x, y = 0f)
 
@@ -134,20 +139,49 @@ private inline fun FreeformScope.dropIndex(
     return GridHorizontalCellCount * verticalCount + horizontalCount
 }
 
+private fun FreeformScope.scrollableHeight(model: FreeformModel): Float {
+    return if (model.open == null) {
+        0f
+    } else {
+        val count = model.stickies.count { (_, sticky) -> sticky.category == model.open }
+        val rows = (count / 2) + 1
+        val requiredHeight = spacer.y + rows * (spacer.y + cellSize.y)
+        maxOf(0f, requiredHeight - size.y)
+    }
+}
+
 @Composable
 fun Pane(modifier: Modifier = Modifier) {
+    // Set the initial model.
+    var model by remember { mutableStateOf(initialModel) }
+    val (dragged, setDragged) = remember { mutableStateOf(emptySet<StickyIdentifier>()) }
+    val (changeCategoryOverlayStart, setChangeCategoryOverlayStart) = remember {
+        mutableStateOf<Pair<StickyIdentifier, Long>?>(null)
+    }
+
     Freeform(
         modifier
             .background(Color.StickiesFakeWhite)
             .fillMaxSize()
     ) {
 
-        // Set the initial model.
-        val (model, setModel) = remember { mutableStateOf(initialModel) }
-        val (dragged, setDragged) = remember { mutableStateOf(emptySet<StickyIdentifier>()) }
-        val (changeCategoryOverlayStart, setChangeCategoryOverlayStart) = remember {
-            mutableStateOf<Pair<StickyIdentifier, Long>?>(null)
-        }
+        // Prepare the scroll handlers.
+        var detailScroll by remember { mutableStateOf(NoScroll()) }
+
+        // The controller in charge of letting us scroll. Makes sure we do not overscroll the
+        // bounds of our views.
+        val controller = rememberScrollableController(consumeScrollDelta = { delta ->
+            val previous = detailScroll.amount
+            val next = (detailScroll.amount - delta).coerceIn(0f, scrollableHeight(model))
+            detailScroll = Scrolled(next)
+            next - previous
+        })
+
+        // Our scrollable observer. It fills the background of the whole view.
+        Box(
+            modifier = Modifier.fillMaxSize().scrollable(Orientation.Vertical, controller),
+            children = {},
+        )
 
         // Render the category details placeholders, as needed.
         val showDetailOptions = model.isOpen && dragged.isNotEmpty()
@@ -201,12 +235,13 @@ fun Pane(modifier: Modifier = Modifier) {
 
                         override fun onDrag(dragDistance: Offset): Offset {
                             setDrag(Dragging(position + dragDistance))
+                            // Consume all the drags.
                             return dragDistance
                         }
 
                         override fun onStop(velocity: Offset) {
                             if (!model.isOpen) {
-                                setModel(model.swapCategories(index, dropIndex(position)))
+                                model = model.swapCategories(index, dropIndex(position))
                             }
                             setDrag(NotDragging())
                         }
@@ -245,9 +280,15 @@ fun Pane(modifier: Modifier = Modifier) {
 
                 // Sticky offset.
                 val stickyRestOffset = when {
-                    model.open == sticky.category -> detailOffset(pileIndex[sticky.category])
-                    model.isOpen -> hiddenOffset(index = sticky.category, open = model.open ?: 0)
-                    else -> restOffset(sticky.category)
+                    model.open == sticky.category -> detailOffset(
+                        index = pileIndex[sticky.category],
+                        scroll = detailScroll
+                    )
+                    model.isOpen -> hiddenOffset(
+                        index = sticky.category,
+                        open = model.open ?: 0
+                    )
+                    else -> restOffset(index = sticky.category)
                 }
                 val position = drag.position ?: stickyRestOffset
 
@@ -262,9 +303,11 @@ fun Pane(modifier: Modifier = Modifier) {
                     pileSize = pileSize[sticky.category],
                     onClick = {
                         if (isSelfOpen) {
-                            setModel(model.copy(open = null))
+                            detailScroll = NoScroll()
+                            model = model.copy(open = null)
                         } else {
-                            setModel(model.copy(open = sticky.category))
+                            detailScroll = NoScroll()
+                            model = model.copy(open = sticky.category)
                         }
                     },
                     onDragStarted = {
@@ -277,10 +320,7 @@ fun Pane(modifier: Modifier = Modifier) {
                         setDragged(dragged - sticky.identifier)
                         setDrag(NotDragging())
                         if (!isAnyOpen) {
-                            setModel(
-                                model
-                                    .move(sticky.identifier, dropIndex(position))
-                            )
+                            model = model.move(sticky.identifier, dropIndex(position))
                         }
                     },
                     onDragOffset = { offset ->
@@ -300,7 +340,8 @@ fun Pane(modifier: Modifier = Modifier) {
                                             changeCategoryOverlayStart.first == sticky.identifier
                                         ) {
                                             setChangeCategoryOverlayStart(null)
-                                            setModel(model.copy(open = null))
+                                            detailScroll = NoScroll()
+                                            model = model.copy(open = null)
                                         }
                                     }
                                 } else {
@@ -436,7 +477,7 @@ object PaneConstants {
     const val StickyMaxStiffness = Spring.StiffnessLow
 
     // Angles and offsets applied to stickies, depending on their pile index.
-    val PileAngles = listOf(0f, 3f, 2f -4f)
+    val PileAngles = listOf(0f, 3f, -2f)
     val PileOffsetX = listOf(0.dp, 4.dp, (-4).dp, 3.dp)
     val PileOffsetY = listOf(0.dp, (-6).dp, (-6).dp, 2.dp)
 }

@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.zIndex
 import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
+import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridHorizontalCellCount
+import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridVerticalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileAngles
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileOffsetX
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileOffsetY
@@ -49,9 +51,41 @@ import ch.heigvd.ihm.stickies.util.fastForEachIndexedReversed
 @Suppress("NOTHING_TO_INLINE")
 private inline fun FreeformScope.hiddenOffset(
     index: Int,
+    open: Int,
 ): Offset {
     return restOffset(index)
-        .plus(Offset(x = 0f, y = -size.y))
+        .plus(
+            Offset(
+                x = 0f,
+                y = if (open < (GridHorizontalCellCount * GridVerticalCellCount) / 2) size.y
+                else -size.y
+            )
+        )
+}
+
+/**
+ * Calculates the offset to be applied to a cell that is shown in the detail view.
+ *
+ * TODO : Provide some additional information related to scroll.
+ *
+ * @param index the grid index of the item to show.
+ *
+ * @return the [Offset] at which the item at the index-th position should be placed.
+ */
+@Suppress("NOTHING_TO_INLINE")
+private inline fun FreeformScope.detailOffset(
+    index: Int,
+): Offset {
+    val horizontalCount = index % 2
+    val verticalCount = (index - horizontalCount) / 2
+    val topLeading = origin +
+            Offset(x = 2 * spacer.x, y = 0.5f * spacer.y) +
+            Offset(x = cellSize.x, y = 0f)
+
+    return topLeading + Offset(
+        x = horizontalCount * (spacer.x + cellSize.x),
+        y = verticalCount * (spacer.y + cellSize.y),
+    )
 }
 
 /**
@@ -65,8 +99,8 @@ private inline fun FreeformScope.hiddenOffset(
 private inline fun FreeformScope.restOffset(
     index: Int,
 ): Offset {
-    val horizontalCount = index % FreeformConstants.GridHorizontalCellCount
-    val verticalCount = (index - horizontalCount) / FreeformConstants.GridVerticalCellCount
+    val horizontalCount = index % GridHorizontalCellCount
+    val verticalCount = (index - horizontalCount) / GridHorizontalCellCount
     // Items have at least one "unit" of spacer at the top left.
     return origin + Offset(
         spacer.x + (horizontalCount * (spacer.x + cellSize.x)),
@@ -88,15 +122,15 @@ private inline fun FreeformScope.dropIndex(
     // TODO : This implementation completely ignores the spacings. Maybe this is something we'll
     //        actually want to take into account.
     val delta = position - origin
-    val horizontal = size.x / FreeformConstants.GridHorizontalCellCount
-    val vertical = size.y / FreeformConstants.GridVerticalCellCount
+    val horizontal = size.x / GridHorizontalCellCount
+    val vertical = size.y / GridVerticalCellCount
 
     val horizontalCount = ((delta.x + cellSize.x / 2) / horizontal).toInt()
-        .coerceIn(0, FreeformConstants.GridHorizontalCellCount - 1)
+        .coerceIn(0, GridHorizontalCellCount - 1)
     val verticalCount = ((delta.y + cellSize.y / 2) / vertical).toInt()
-        .coerceIn(0, FreeformConstants.GridVerticalCellCount - 1)
+        .coerceIn(0, GridVerticalCellCount - 1)
 
-    return FreeformConstants.GridHorizontalCellCount * verticalCount + horizontalCount
+    return GridHorizontalCellCount * verticalCount + horizontalCount
 }
 
 @Composable
@@ -154,12 +188,8 @@ fun Pane(modifier: Modifier = Modifier) {
 
                     val catIndex = sticky.categoryIndex
                     val stickyRestOffset = when {
-                        // TODO : Change this.
-                        model.open == sticky.categoryIndex -> origin + Offset(
-                            (size.x - cellSize.x) / 2,
-                            (size.y - cellSize.y) / 2,
-                        )
-                        model.isOpen -> hiddenOffset(catIndex)
+                        model.open == sticky.categoryIndex -> detailOffset(stiIndex)
+                        model.isOpen -> hiddenOffset(index = catIndex, open = model.open ?: 0)
                         else -> restOffset(catIndex)
                     }
                     val position = when {
@@ -171,6 +201,7 @@ fun Pane(modifier: Modifier = Modifier) {
                     val isAnyOpen = model.isOpen
 
                     FreeformSticky(
+                        detailed = isSelfOpen,
                         bubbled = sticky.sticky.highlighted,
                         dragged = dragOffset != null,
                         offset = position,
@@ -262,6 +293,7 @@ fun Pane(modifier: Modifier = Modifier) {
  */
 @Composable
 private fun FreeformSticky(
+    detailed: Boolean,
     bubbled: Boolean,
     dragged: Boolean,
     offset: Offset,
@@ -330,11 +362,23 @@ private fun FreeformSticky(
                     }
                 })
                 .drawLayer(
-                    rotationZ = animate(PileAngles[pileIndex % PileAngles.size]),
+                    rotationZ = animate(
+                        if (detailed) 0f
+                        else PileAngles[pileIndex % PileAngles.size],
+                        spring,
+                    ),
                     transformOrigin = TransformOrigin.Center,
                 ).offset(
-                    x = animate(PileOffsetX[pileIndex % PileOffsetX.size]),
-                    y = animate(PileOffsetY[pileIndex % PileOffsetY.size]),
+                    x = animate(
+                        if (detailed) PileOffsetX[pileIndex % PileOffsetX.size]
+                        else 0.dp,
+                        dpSpring,
+                    ),
+                    y = animate(
+                        if (detailed) PileOffsetY[pileIndex % PileOffsetY.size]
+                        else 0.dp,
+                        dpSpring,
+                    ),
                 )
         )
     }

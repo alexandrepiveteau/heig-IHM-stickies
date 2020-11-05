@@ -144,24 +144,24 @@ fun Pane(modifier: Modifier = Modifier) {
         val (model, setModel) = remember { mutableStateOf(initialModel) }
 
         // Render all the category placeholders.
-        // TODO : Add support for draggable categories.
         model.categories.fastForEachIndexed { index, category ->
             key(category) {
                 val color = if (model.open != null) Color.StickiesFakeWhite
                 else contentColorFor(color = MaterialTheme.colors.surface)
+                val spring = spring<Offset>(dampingRatio = 0.85f, Spring.StiffnessLow)
 
                 // Placeholder-specific drag information.
                 val (drag, setDrag) = remember { mutableStateOf(NotDragging()) }
                 val position = drag.position ?: restOffset(index)
 
-                Placeholder(
+                // Render a title that can be dragged.
+                PlaceholderTitle(
                     title = category.title,
-                    asset = vectorResource(id = category.icon),
+                    asset = vectorResource(category.icon),
                     color = animate(color),
+                    modifier = Modifier.offset(animate(position, spring)),
                     longPressDragObserver = object : LongPressDragObserver {
-                        override fun onDragStart() {
-                            setDrag(Dragging(position))
-                        }
+                        override fun onDragStart() = setDrag(Dragging(position))
 
                         override fun onDrag(dragDistance: Offset): Offset {
                             setDrag(Dragging(position + dragDistance))
@@ -175,20 +175,14 @@ fun Pane(modifier: Modifier = Modifier) {
                             setDrag(NotDragging())
                         }
                     },
-                    modifier = Modifier
-                        .offset(
-                            animate(
-                                position,
-                                spring(dampingRatio = 0.85f, Spring.StiffnessLow)
-                            )
-                        )
-                        .clickable(onClick = {
-                            if (!model.isOpen) {
-                                setModel(model.swapCategories(index, 0))
-                            }
-                        }, indication = null)
-
-                )
+                ) {
+                    // Render the actual content of the category.
+                    Placeholder(
+                        title = category.title,
+                        asset = vectorResource(category.icon),
+                        color = animate(color),
+                    )
+                }
             }
         }
 

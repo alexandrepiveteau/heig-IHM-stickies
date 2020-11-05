@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Providers
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.TransformOrigin
 import androidx.compose.ui.drawLayer
 import androidx.compose.ui.gesture.LongPressDragObserver
 import androidx.compose.ui.gesture.longPressDragGestureFilter
@@ -41,21 +40,16 @@ private val ContentTextStyle = TextStyle(
 )
 
 @Composable
-fun Placeholder(
+fun PlaceholderTitle(
     title: String,
     asset: VectorAsset,
     modifier: Modifier = Modifier,
+    color: Color = AmbientContentColor.current,
     longPressDragObserver: LongPressDragObserver = object : LongPressDragObserver {},
-    color: Color = contentColorFor(MaterialTheme.colors.surface),
+    content: @Composable BoxScope.() -> Unit,
 ) {
-    val ambient = color.copy(alpha = 0.2f)
-    Providers(AmbientContentColor provides ambient) {
-        Box(
-            modifier = modifier
-                .border(4.dp, AmbientContentColor.current, RoundedCornerShape(32.dp))
-                .size(StickySize),
-            alignment = Alignment.Center,
-        ) {
+    Providers(AmbientContentColor provides color.copy(alpha = 0.2f)) {
+        Box(modifier, Alignment.Center) {
             Column(
                 Modifier
                     .align(Alignment.TopStart)
@@ -72,16 +66,27 @@ fun Placeholder(
                 }
                 Spacer(Modifier.height(16.dp))
             }
+            content()
+        }
+    }
+}
+
+@Composable
+fun Placeholder(
+    title: String,
+    asset: VectorAsset,
+    modifier: Modifier = Modifier,
+    color: Color = contentColorFor(MaterialTheme.colors.surface),
+) {
+    Providers(AmbientContentColor provides color.copy(alpha = 0.2f)) {
+        Box(
+            modifier = modifier
+                .border(4.dp, AmbientContentColor.current, RoundedCornerShape(32.dp))
+                .size(StickySize),
+            alignment = Alignment.Center,
+        ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    asset, Modifier
-                        .preferredSize(64.dp)
-                        .drawLayer(
-                            scaleX = 3f,
-                            scaleY = 3f,
-                            transformOrigin = TransformOrigin.Center,
-                        )
-                )
+                Icon(asset, Modifier.preferredSize(64.dp).drawLayer(scaleX = 3f, scaleY = 3f))
                 Spacer(Modifier.preferredHeight(8.dp))
                 Text(title, style = ContentTextStyle)
             }

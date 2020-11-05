@@ -415,13 +415,13 @@ private fun FreeformSticky(
                     transformOrigin = TransformOrigin.Center,
                 ).offset(
                     x = animate(
-                        if (detailed || dragged) PileOffsetX[pileIndex % PileOffsetX.size]
-                        else 0.dp,
+                        if (detailed || dragged) 0.dp
+                        else PileOffsetX[pileIndex % PileOffsetX.size],
                         dpSpring,
                     ),
                     y = animate(
-                        if (detailed || dragged) PileOffsetY[pileIndex % PileOffsetY.size]
-                        else 0.dp,
+                        if (detailed || dragged) 0.dp
+                        else PileOffsetY[pileIndex % PileOffsetY.size],
                         dpSpring,
                     ),
                 )
@@ -436,7 +436,7 @@ object PaneConstants {
     const val StickyMaxStiffness = Spring.StiffnessLow
 
     // Angles and offsets applied to stickies, depending on their pile index.
-    val PileAngles = listOf(0f, 3f, 2f)
-    val PileOffsetX = listOf(0.dp, 4.dp, (-4).dp)
-    val PileOffsetY = listOf(0.dp, (-6).dp, (-6).dp)
+    val PileAngles = listOf(0f, 3f, 2f -4f)
+    val PileOffsetX = listOf(0.dp, 4.dp, (-4).dp, 3.dp)
+    val PileOffsetY = listOf(0.dp, (-6).dp, (-6).dp, 2.dp)
 }

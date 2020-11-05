@@ -265,12 +265,18 @@ fun Pane(modifier: Modifier = Modifier) {
                         setDragged(dragged - sticky.identifier)
                         setDrag(NotDragging())
                         if (!isAnyOpen) {
-                            setModel(model.move(sticky.identifier, dropIndex(position)))
+                            setModel(
+                                model
+                                    .move(sticky.identifier, dropIndex(position))
+                            )
                         }
                     },
                     onDragOffset = { offset ->
                         if (drag.isDragging) {
                             setDrag(Dragging(position + offset))
+                            if (isSelfOpen && dropIndex(position + offset) == 0) {
+                                setModel(model.copy(open = null))
+                            }
                         }
                     },
                 )

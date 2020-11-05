@@ -18,22 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ch.heigvd.ihm.stickies.model.Sticky
 import ch.heigvd.ihm.stickies.ui.GochiHand
-
-@Composable
-fun Sticky(
-    data: Sticky,
-    modifier: Modifier = Modifier,
-) {
-    Bubble(visible = data.highlighted) {
-        Sticky(
-            text = data.title,
-            color = data.color,
-            modifier = modifier,
-        )
-    }
-}
 
 @Composable
 fun Sticky(

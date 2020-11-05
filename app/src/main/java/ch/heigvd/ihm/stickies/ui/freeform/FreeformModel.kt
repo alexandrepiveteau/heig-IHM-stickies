@@ -5,16 +5,31 @@ import androidx.compose.ui.graphics.Color
 import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.model.Sticky
 import ch.heigvd.ihm.stickies.ui.*
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.toPersistentList
+
+data class FreeformSticky(
+    val categoryIndex: Int,
+    val sticky: Sticky,
+    val dragState: DragState,
+)
 
 data class FreeformCategory(
     val title: String,
     @DrawableRes val icon: Int,
-    val stickies: List<Sticky>,
 )
 
 data class FreeformModel(
-    val categories: List<FreeformCategory>,
+    val categories: PersistentList<FreeformCategory>,
+    val stickies: PersistentList<FreeformSticky>,
+    val open: Int?,
 ) {
+
+    /**
+     * Returns true if a certain category is currently open.
+     */
+    val isOpen: Boolean
+        get() = open != null
 
     /**
      * Swaps two piles with indices [first] and [second]. If the indices are identical (and within
@@ -25,16 +40,46 @@ data class FreeformModel(
      *
      * @return the new [FreeformModel].
      */
-    fun swap(first: Int, second: Int): FreeformModel {
-        val a = categories[first].stickies
-        val b = categories[second].stickies
-        val catA = categories[first].copy(stickies = b)
-        val catB = categories[second].copy(stickies = a)
-        val list = categories.toMutableList().apply {
-            set(first, catA)
-            set(second, catB)
-        }
-        return FreeformModel(list)
+    fun swapCategories(first: Int, second: Int): FreeformModel {
+        val stickies = this.stickies.asSequence()
+            .map {
+                when (it.categoryIndex) {
+                    first -> it.copy(categoryIndex = second)
+                    second -> it.copy(categoryIndex = first)
+                    else -> it
+                }
+            }
+            .asIterable()
+            .toPersistentList()
+
+        val catA = categories[first]
+        val catB = categories[second]
+
+        val categories = this.categories
+            .set(first, catB)
+            .set(second, catA)
+
+        return copy(categories = categories, stickies = stickies)
+    }
+
+    fun move(identifier: Long, toPile: Int): FreeformModel {
+        val index = this.stickies.indexOfFirst { it.sticky.identifier == identifier }
+        val sticky = this.stickies[index].copy(categoryIndex = toPile)
+        return this.copy(
+            stickies = stickies.removeAt(index).add(0, sticky)
+        )
+    }
+
+    fun updateStickyDrag(identifier: Long, state: DragState): FreeformModel {
+        val index = this.stickies.indexOfFirst { it.sticky.identifier == identifier }
+        return this.copy(
+            stickies = stickies.set(
+                index,
+                stickies[index].copy(
+                    dragState = state,
+                ),
+            )
+        )
     }
 }
 
@@ -50,7 +95,12 @@ val ExamplePileB: List<Sticky> = listOf(
 )
 
 val ExamplePileC: List<Sticky> = listOf(
-    Sticky(31, Color.StickiesOrange, "Take all my pills for the day :\n\n-Aspirin\n-Lotensin", true),
+    Sticky(
+        31,
+        Color.StickiesOrange,
+        "Take all my pills for the day :\n\n-Aspirin\n-Lotensin",
+        true
+    ),
 )
 
 val ExamplePileD: List<Sticky> = listOf(
@@ -69,37 +119,28 @@ val ExamplePileF: List<Sticky> = listOf(
     Sticky(63, Color.StickiesPink, "", false)
 )
 
+private fun List<Sticky>.toFreeform(category: Int): List<FreeformSticky> {
+    return map { FreeformSticky(category, it, NotDragging()) }
+}
+
+val categories = listOf(
+    FreeformCategory("Inbox", R.drawable.ic_category_inbox),
+    FreeformCategory("Groceries", R.drawable.ic_category_basket),
+    FreeformCategory("Medical Stuff", R.drawable.ic_category_medical),
+    FreeformCategory("Appointments", R.drawable.ic_category_basket),
+    FreeformCategory("Exercise", R.drawable.ic_category_exercise),
+    FreeformCategory("Medor", R.drawable.ic_category_bone),
+)
+
 val initialModel = FreeformModel(
-    listOf(
-        FreeformCategory(
-            title = "Inbox",
-            icon = R.drawable.ic_category_inbox,
-            stickies = ExamplePileA,
-        ),
-        FreeformCategory(
-            title = "Groceries",
-            icon = R.drawable.ic_category_basket,
-            stickies = ExamplePileB,
-        ),
-        FreeformCategory(
-            title = "Medical Stuff",
-            icon = R.drawable.ic_category_medical,
-            stickies = ExamplePileC,
-        ),
-        FreeformCategory(
-            title = "Appointments",
-            icon = R.drawable.ic_category_basket,
-            stickies = ExamplePileD,
-        ),
-        FreeformCategory(
-            title = "Exercise",
-            icon = R.drawable.ic_category_exercise,
-            stickies = ExamplePileE,
-        ),
-        FreeformCategory(
-            title = "Medor",
-            icon = R.drawable.ic_category_bone,
-            stickies = ExamplePileF,
-        ),
-    )
+    categories = categories.toPersistentList(),
+    stickies = listOf(
+        ExamplePileA.toFreeform(0),
+        ExamplePileB.toFreeform(1),
+        ExamplePileC.toFreeform(2),
+        ExamplePileD.toFreeform(3),
+        ExamplePileE.toFreeform(4),
+        ExamplePileF.toFreeform(5),
+    ).flatten().toPersistentList(),
+    open = null,
 )

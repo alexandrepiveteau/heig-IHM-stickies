@@ -5,7 +5,10 @@ import androidx.compose.foundation.Text
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Providers
 import androidx.compose.ui.Alignment
@@ -40,13 +43,13 @@ fun Placeholder(
     title: String,
     asset: VectorAsset,
     modifier: Modifier = Modifier,
+    color: Color = contentColorFor(MaterialTheme.colors.surface),
 ) {
-    // TODO : Use context-provided instead.
-    val color = Color.Black.copy(alpha = 0.1f)
-    Providers(AmbientContentColor provides color) {
+    val ambient = color.copy(alpha = 0.2f)
+    Providers(AmbientContentColor provides ambient) {
         Box(
             modifier = modifier
-                .border(4.dp, color, RoundedCornerShape(32.dp))
+                .border(4.dp, AmbientContentColor.current, RoundedCornerShape(32.dp))
                 .size(StickySize),
             alignment = Alignment.Center,
         ) {

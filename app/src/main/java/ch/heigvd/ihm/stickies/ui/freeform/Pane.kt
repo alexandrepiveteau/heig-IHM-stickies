@@ -42,6 +42,8 @@ import ch.heigvd.ihm.stickies.ui.modifier.offset
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.*
 
+typealias Timestamp = Long
+
 /**
  * A composable that displays a [Pane] of stickies. These stickies can be moved around in
  * different categories, as well as opened, deleted and created.
@@ -53,7 +55,7 @@ fun Pane(modifier: Modifier = Modifier) {
     // Set the initial model.
     var model by remember { mutableStateOf(initialModel) }
     var dragged by remember { mutableStateOf(emptySet<StickyIdentifier>()) }
-    var overlayStickyToTime by remember { mutableStateOf<Pair<StickyIdentifier, Long>?>(null) }
+    var draggedForMove by remember { mutableStateOf<Pair<StickyIdentifier, Timestamp>?>(null) }
 
     Freeform(
         modifier
@@ -225,22 +227,22 @@ fun Pane(modifier: Modifier = Modifier) {
                             if (isSelfOpen) {
                                 // 700ms overlay delay for dropping on the change category.
                                 if (dropIndex(position + offset) == 0) {
-                                    val stickyToTime = overlayStickyToTime
+                                    val stickyToTime = draggedForMove
                                     if (stickyToTime == null) {
-                                        overlayStickyToTime =
+                                        draggedForMove =
                                             sticky.identifier to System.currentTimeMillis()
                                     } else {
                                         val delta = System.currentTimeMillis() - stickyToTime.second
                                         if (delta > 700L && stickyToTime.first == sticky.identifier) {
-                                            overlayStickyToTime = null
+                                            draggedForMove = null
                                             detailScroll = NoScroll()
                                             model = model.copy(open = null)
                                         }
                                     }
                                 } else {
                                     // We are not overlaying.
-                                    if (overlayStickyToTime?.first == sticky.identifier) {
-                                        overlayStickyToTime = null
+                                    if (draggedForMove?.first == sticky.identifier) {
+                                        draggedForMove = null
                                     }
                                 }
                             }

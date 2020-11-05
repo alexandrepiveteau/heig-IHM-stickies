@@ -333,10 +333,10 @@ private fun FreeformSticky(
     } else {
         0f
     }
-    val detailedMultiplier = if (detailed) 0f else 1f
+    val skipSlowdown = if (detailed || dragged) 0f else 1f
     val spring = spring(
         dampingRatio = Spring.DampingRatioLowBouncy,
-        stiffness = StickyMaxStiffness - (stiffnessStep * pileIndex * detailedMultiplier),
+        stiffness = StickyMaxStiffness - (stiffnessStep * pileIndex * skipSlowdown),
         visibilityThreshold = 0.01f,
     )
     val dpSpring = spring(
@@ -384,19 +384,19 @@ private fun FreeformSticky(
                 })
                 .drawLayer(
                     rotationZ = animate(
-                        if (detailed) 0f
+                        if (detailed || dragged) 0f
                         else PileAngles[pileIndex % PileAngles.size],
                         spring,
                     ),
                     transformOrigin = TransformOrigin.Center,
                 ).offset(
                     x = animate(
-                        if (detailed) PileOffsetX[pileIndex % PileOffsetX.size]
+                        if (detailed || dragged) PileOffsetX[pileIndex % PileOffsetX.size]
                         else 0.dp,
                         dpSpring,
                     ),
                     y = animate(
-                        if (detailed) PileOffsetY[pileIndex % PileOffsetY.size]
+                        if (detailed || dragged) PileOffsetY[pileIndex % PileOffsetY.size]
                         else 0.dp,
                         dpSpring,
                     ),

@@ -145,6 +145,9 @@ fun Pane(modifier: Modifier = Modifier) {
         // Set the initial model.
         val (model, setModel) = remember { mutableStateOf(initialModel) }
         val (dragged, setDragged) = remember { mutableStateOf(emptySet<StickyIdentifier>()) }
+        val (changeCategoryOverlayStart, setChangeCategoryOverlayStart) = remember {
+            mutableStateOf<Pair<StickyIdentifier, Long>?>(null)
+        }
 
         // Render the category details placeholders, as needed.
         val showDetailOptions = model.isOpen && dragged.isNotEmpty()
@@ -283,8 +286,29 @@ fun Pane(modifier: Modifier = Modifier) {
                     onDragOffset = { offset ->
                         if (drag.isDragging) {
                             setDrag(Dragging(position + offset))
-                            if (isSelfOpen && dropIndex(position + offset) == 0) {
-                                setModel(model.copy(open = null))
+                            if (isSelfOpen) {
+                                // 700ms overlay delay for dropping on the change category.
+                                if (dropIndex(position + offset) == 0) {
+                                    if (changeCategoryOverlayStart == null) {
+                                        setChangeCategoryOverlayStart(
+                                            sticky.identifier to System.currentTimeMillis()
+                                        )
+                                    } else {
+                                        val delta = System.currentTimeMillis() -
+                                                changeCategoryOverlayStart.second
+                                        if (delta > 700L &&
+                                            changeCategoryOverlayStart.first == sticky.identifier
+                                        ) {
+                                            setChangeCategoryOverlayStart(null)
+                                            setModel(model.copy(open = null))
+                                        }
+                                    }
+                                } else {
+                                    // We are not overlaying.
+                                    if (changeCategoryOverlayStart?.first == sticky.identifier) {
+                                        setChangeCategoryOverlayStart(null)
+                                    }
+                                }
                             }
                         }
                     },

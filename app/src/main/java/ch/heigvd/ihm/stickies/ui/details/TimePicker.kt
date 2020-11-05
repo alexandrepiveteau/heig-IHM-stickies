@@ -3,6 +3,7 @@ package ch.heigvd.ihm.stickies.ui.details
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.Typeface
+import androidx.compose.animation.animate
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
@@ -39,7 +40,10 @@ fun TimePicker(
         val minutesState = rememberLazyListState(initialFirstVisibleItemIndex = time.minute - 2)
 
         Clock(
-                time = LocalTime.of(hoursState.firstVisibleItemIndex + 2, minutesState.firstVisibleItemIndex + 2),
+                time = LocalTime.of(
+                    hours[hoursState.firstVisibleItemIndex + 2],
+                    minutes[minutesState.firstVisibleItemIndex + 2],
+                ),
                 modifier = modifier,
         )
 
@@ -56,30 +60,6 @@ fun TimePicker(
         )
     }
 }
-/*
-Button(onClick = {
-    val minute = time.minute % 60
-    val hour = (time.hour + 1) % 24
-    onClick(LocalTime.of(hour, minute))
-})
-{
-    Text("${time.hour}")
-}
-
-Button(onClick = {
-    val incHour = time.minute + 1 == 60
-    val minute = (time.minute + 1) % 60
-    val hour = if (incHour) {
-        (time.hour + 1) % 24
-    } else {
-        time.hour % 24
-    }
-    onClick(LocalTime.of(hour, minute))
-})
-{
-    Text("${time.minute}")
-}
- */
 
 @Composable
 fun NumberPicker(
@@ -136,6 +116,9 @@ fun Clock(
         return (min / 30f + angleOffset) * PI.toFloat()
     }
 
+    val hAngle = animate(hAngle(time.hour, time.minute))
+    val mAngle = animate(mAngle(time.minute))
+
     // Draw on the canvas
     Canvas(
             modifier
@@ -180,8 +163,8 @@ fun Clock(
                 start = offset,
                 end = offset.plus(
                         Offset(
-                                cos(mAngle(time.minute)),
-                                sin(mAngle(time.minute))
+                                cos(mAngle),
+                                sin(mAngle)
                         ).times(minutesLengthMult * clockRadius)
                 ),
                 strokeWidth = minutesWidth,
@@ -194,8 +177,8 @@ fun Clock(
                 start = offset,
                 end = offset.plus(
                         Offset(
-                                cos(hAngle(time.hour, time.minute)),
-                                sin(hAngle(time.hour, time.minute))
+                                cos(hAngle),
+                                sin(hAngle),
                         ).times(hoursLengthMult * clockRadius)
                 ),
                 strokeWidth = hoursWidth,

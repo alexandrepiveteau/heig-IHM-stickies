@@ -43,112 +43,11 @@ import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.*
 
 /**
- * Calculates the offset to be applied to a cell at a certain grid index to hide it from the
- * category detail view.
+ * A composable that displays a [Pane] of stickies. These stickies can be moved around in
+ * different categories, as well as opened, deleted and created.
  *
- * @param index the grid index of the item to hide.
- *
- * @return the [Offset] at which the items will be placed when hidden.
+ * @param modifier the [Modifier] that this pane is based on.
  */
-@Suppress("NOTHING_TO_INLINE")
-private inline fun FreeformScope.hiddenOffset(
-    index: Int,
-    open: Int,
-): Offset {
-    return restOffset(index)
-        .plus(
-            Offset(
-                x = 0f,
-                y = if (open < (GridHorizontalCellCount * GridVerticalCellCount) / 2) size.y
-                else -size.y
-            )
-        )
-}
-
-/**
- * Calculates the offset to be applied to a cell that is shown in the detail view.
- *
- * TODO : Provide some additional information related to scroll.
- *
- * @param index the grid index of the item to show.
- * @param scroll how much scroll amount there currently is.
- *
- * @return the [Offset] at which the item at the index-th position should be placed.
- */
-@Suppress("NOTHING_TO_INLINE")
-private inline fun FreeformScope.detailOffset(
-    index: Int,
-    scroll: ScrollState,
-): Offset {
-    val horizontalCount = index % 2
-    val verticalCount = (index - horizontalCount) / 2
-    val topLeading = origin +
-            Offset(x = 0f, y = -scroll.amount) +
-            Offset(x = 2 * spacer.x, y = 0.5f * spacer.y) +
-            Offset(x = cellSize.x, y = 0f)
-
-    return topLeading + Offset(
-        x = horizontalCount * (spacer.x + cellSize.x),
-        y = verticalCount * (spacer.y + cellSize.y),
-    )
-}
-
-/**
- * Calculates the offset at which an item at a certain index should be positioned to be at rest.
- *
- * @param index the index for which we want the rest offset.
- *
- * @return the [Offset] at which the item should be put at rest.
- */
-@Suppress("NOTHING_TO_INLINE")
-private inline fun FreeformScope.restOffset(
-    index: Int,
-): Offset {
-    val horizontalCount = index % GridHorizontalCellCount
-    val verticalCount = (index - horizontalCount) / GridHorizontalCellCount
-    // Items have at least one "unit" of spacer at the top left.
-    return origin + Offset(
-        spacer.x + (horizontalCount * (spacer.x + cellSize.x)),
-        spacer.y + (verticalCount * (spacer.y + cellSize.y)),
-    )
-}
-
-/**
- * Calculates the drop index of a document, depending on the grid dimensions.
- *
- * @param position the [Offset] at which the item is dropped.
- *
- * @return the index of the drop position.
- */
-@Suppress("NOTHING_TO_INLINE")
-private inline fun FreeformScope.dropIndex(
-    position: Offset,
-): Int {
-    // TODO : This implementation completely ignores the spacings. Maybe this is something we'll
-    //        actually want to take into account.
-    val delta = position - origin
-    val horizontal = size.x / GridHorizontalCellCount
-    val vertical = size.y / GridVerticalCellCount
-
-    val horizontalCount = ((delta.x + cellSize.x / 2) / horizontal).toInt()
-        .coerceIn(0, GridHorizontalCellCount - 1)
-    val verticalCount = ((delta.y + cellSize.y / 2) / vertical).toInt()
-        .coerceIn(0, GridVerticalCellCount - 1)
-
-    return GridHorizontalCellCount * verticalCount + horizontalCount
-}
-
-private fun FreeformScope.scrollableHeight(model: FreeformModel): Float {
-    return if (model.open == null) {
-        0f
-    } else {
-        val count = model.stickies.count { (_, sticky) -> sticky.category == model.open }
-        val rows = (count / 2) + 1
-        val requiredHeight = spacer.y + rows * (spacer.y + cellSize.y)
-        maxOf(0f, requiredHeight - size.y)
-    }
-}
-
 @Composable
 fun Pane(modifier: Modifier = Modifier) {
     // Set the initial model.
@@ -193,7 +92,7 @@ fun Pane(modifier: Modifier = Modifier) {
             ),
             background = Color.Transparent,
             modifier = Modifier
-                .offset(restOffset(0))
+                .offset(rest(0))
                 .zIndex(3f)
         )
         Placeholder(
@@ -205,7 +104,7 @@ fun Pane(modifier: Modifier = Modifier) {
             ),
             background = Color.Transparent,
             modifier = Modifier
-                .offset(restOffset(GridHorizontalCellCount))
+                .offset(rest(GridHorizontalCellCount))
                 .zIndex(3f)
         )
 
@@ -217,7 +116,7 @@ fun Pane(modifier: Modifier = Modifier) {
                 val spring = spring<Offset>(dampingRatio = 0.85f, Spring.StiffnessLow)
 
                 // Placeholder-specific drag information.
-                val restOffset = restOffset(index)
+                val restOffset = rest(index)
                 val (drag, setDrag) = remember { mutableStateOf(NotDragging()) }
                 val position = drag.position ?: restOffset
 
@@ -279,15 +178,15 @@ fun Pane(modifier: Modifier = Modifier) {
 
                 // Sticky offset.
                 val stickyRestOffset = when {
-                    model.open == sticky.category -> detailOffset(
+                    model.open == sticky.category -> detail(
                         index = pileIndex[sticky.category],
                         scroll = detailScroll
                     )
-                    model.isOpen -> hiddenOffset(
+                    model.isOpen -> hidden(
                         index = sticky.category,
                         open = model.open ?: 0
                     )
-                    else -> restOffset(index = sticky.category)
+                    else -> rest(index = sticky.category)
                 }
                 val position = drag.position ?: stickyRestOffset
 
@@ -469,6 +368,10 @@ private fun FreeformSticky(
     }
 }
 
+/**
+ * Some constants that are used by the [Pane] composable. They define different behaviors that are
+ * relevant to the rendering bits of panes.
+ */
 object PaneConstants {
 
     // Stiffness that's given to the different springs.

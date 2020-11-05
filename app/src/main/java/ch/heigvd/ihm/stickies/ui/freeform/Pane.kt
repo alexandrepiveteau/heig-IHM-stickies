@@ -91,8 +91,10 @@ private inline fun FreeformScope.dropIndex(
     val horizontal = size.x / FreeformConstants.GridHorizontalCellCount
     val vertical = size.y / FreeformConstants.GridVerticalCellCount
 
-    val horizontalCount = (delta.x / horizontal).toInt()
-    val verticalCount = (delta.y / vertical).toInt()
+    val horizontalCount = ((delta.x + cellSize.x / 2) / horizontal).toInt()
+        .coerceIn(0, FreeformConstants.GridHorizontalCellCount - 1)
+    val verticalCount = ((delta.y + cellSize.y / 2) / vertical).toInt()
+        .coerceIn(0, FreeformConstants.GridVerticalCellCount - 1)
 
     return FreeformConstants.GridHorizontalCellCount * verticalCount + horizontalCount
 }

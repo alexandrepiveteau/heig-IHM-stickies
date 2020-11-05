@@ -2,6 +2,7 @@ package ch.heigvd.ihm.stickies.ui.stickies
 
 import androidx.compose.foundation.AmbientContentColor
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
 import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.ui.Archivo
+import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
 import ch.heigvd.ihm.stickies.ui.modifier.aboveOffset
 
 private val HintTextStyle = TextStyle(
@@ -77,11 +79,13 @@ fun Placeholder(
     asset: VectorAsset,
     modifier: Modifier = Modifier,
     color: Color = contentColorFor(MaterialTheme.colors.surface).copy(alpha = 0.2f),
+    background: Color = Color.StickiesFakeWhite,
 ) {
     Providers(AmbientContentColor provides color) {
         Box(
             modifier = modifier
                 .border(4.dp, AmbientContentColor.current, RoundedCornerShape(32.dp))
+                .background(background, RoundedCornerShape(32.dp))
                 .size(StickySize),
             alignment = Alignment.Center,
         ) {

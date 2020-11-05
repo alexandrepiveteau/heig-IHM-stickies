@@ -153,18 +153,24 @@ fun Pane(modifier: Modifier = Modifier) {
             asset = vectorResource(R.drawable.ic_category_action_move),
             color = animate(
                 if (showDetailOptions) contentColorFor(MaterialTheme.colors.surface).copy(alpha = 0.2f)
-                else Color.StickiesFakeWhite
+                else Color.Transparent
             ),
-            modifier = Modifier.offset(restOffset(0))
+            background = Color.Transparent,
+            modifier = Modifier
+                .offset(restOffset(0))
+                .zIndex(3f)
         )
         Placeholder(
             title = "Delete forever",
             asset = vectorResource(R.drawable.ic_category_action_trash),
             color = animate(
                 if (showDetailOptions) Color.StickiesNicerRed
-                else Color.StickiesFakeWhite
+                else Color.Transparent
             ),
-            modifier = Modifier.offset(restOffset(GridHorizontalCellCount))
+            background = Color.Transparent,
+            modifier = Modifier
+                .offset(restOffset(GridHorizontalCellCount))
+                .zIndex(3f)
         )
 
         // Render all the category placeholders.
@@ -175,15 +181,18 @@ fun Pane(modifier: Modifier = Modifier) {
                 val spring = spring<Offset>(dampingRatio = 0.85f, Spring.StiffnessLow)
 
                 // Placeholder-specific drag information.
+                val restOffset = restOffset(index)
                 val (drag, setDrag) = remember { mutableStateOf(NotDragging()) }
-                val position = drag.position ?: restOffset(index)
+                val position = drag.position ?: restOffset
 
                 // Render a title that can be dragged.
                 PlaceholderTitle(
                     title = category.title,
                     asset = vectorResource(category.icon),
                     color = animate(color).copy(alpha = 0.2f),
-                    modifier = Modifier.offset(animate(position, spring)),
+                    modifier = Modifier
+                        .offset(animate(position, spring))
+                        .zIndex(if (drag.isDragging) 2f else 1f),
                     longPressDragObserver = object : LongPressDragObserver {
                         override fun onDragStart() = setDrag(Dragging(position))
 
@@ -340,7 +349,7 @@ private fun FreeformSticky(
         if (dragged) StickyRaisedElevation else StickyDefaultElevation,
         dpSpring,
     )
-    val base = elevation.value + ((pileSize - (pileIndex + 1)) / pileSize.toFloat()) + 1
+    val base = elevation.value + ((pileSize - (pileIndex + 1)) / pileSize.toFloat()) + 10f
     val supplement = if (dragged) 1.0f else 0f
 
     Bubble(

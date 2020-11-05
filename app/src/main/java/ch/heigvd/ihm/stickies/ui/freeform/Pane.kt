@@ -138,26 +138,36 @@ fun Pane(modifier: Modifier = Modifier) {
 
             // Render, for each category, all of the involved stickies.
             stickies.fastForEachIndexedReversed { stiIndex, sticky ->
-                val catIndex = sticky.categoryIndex
-                val dragOffset = sticky.dragState.offset
-                val stickyRestOffset = when {
-                    // TODO : Change this.
-                    model.open == sticky.categoryIndex -> origin + Offset(
-                        (size.x - cellSize.x) / 2,
-                        (size.y - cellSize.y) / 2,
-                    )
-                    model.isOpen -> hiddenOffset(catIndex)
-                    else -> restOffset(catIndex)
-                }
-                val position = when {
-                    dragOffset != null -> dragOffset
-                    else -> stickyRestOffset
-                }
-
-                val isSelfOpen = model.open == catIndex
-                val isAnyOpen = model.isOpen
-
                 key(sticky.sticky.identifier) {
+
+                    // TODO : Investigate if there is a nicer way to fix that.
+                    //
+                    // Reset the drag offset each time we're actually starting or stopping drag
+                    // events. This is an ugly way to make sure that drag state is preserved and
+                    // memoized locally, and that gestures across multiple stickies are actually
+                    // possible.
+                    val (dragOffset, setDragOffset) = remember(sticky.dragState.position != null) {
+                        mutableStateOf(sticky.dragState.position)
+                    }
+
+                    val catIndex = sticky.categoryIndex
+                    val stickyRestOffset = when {
+                        // TODO : Change this.
+                        model.open == sticky.categoryIndex -> origin + Offset(
+                            (size.x - cellSize.x) / 2,
+                            (size.y - cellSize.y) / 2,
+                        )
+                        model.isOpen -> hiddenOffset(catIndex)
+                        else -> restOffset(catIndex)
+                    }
+                    val position = when {
+                        dragOffset != null -> dragOffset
+                        else -> stickyRestOffset
+                    }
+
+                    val isSelfOpen = model.open == catIndex
+                    val isAnyOpen = model.isOpen
+
                     FreeformSticky(
                         bubbled = sticky.sticky.highlighted,
                         dragged = dragOffset != null,
@@ -181,6 +191,7 @@ fun Pane(modifier: Modifier = Modifier) {
                                         Dragging(position)
                                     )
                                 )
+                                setDragOffset(position)
                             }
                         },
                         onDragStopped = {
@@ -194,6 +205,8 @@ fun Pane(modifier: Modifier = Modifier) {
                                                 NotDragging()
                                             )
                                     )
+                                    // TODO : Maybe we can get rid of that somehow.
+                                    setDragOffset(null)
                                 }
                                 else -> {
                                     setModel(
@@ -202,12 +215,17 @@ fun Pane(modifier: Modifier = Modifier) {
                                             NotDragging()
                                         )
                                     )
+                                    // TODO : Maybe we can get rid of that somehow.
+                                    setDragOffset(null)
                                 }
                             }
                         },
                         onDragOffset = { offset ->
                             if (sticky.dragState.isDragging) {
+                                // TODO : Maybe we can get rid of that somehow.
+                                setDragOffset(offset + position)
                                 setModel(
+                                    // Supposition : we do not always get the latest position.
                                     model.updateStickyDrag(
                                         sticky.sticky.identifier,
                                         Dragging(position + offset)

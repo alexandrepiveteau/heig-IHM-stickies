@@ -29,8 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.zIndex
 import ch.heigvd.ihm.stickies.R
-import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
-import ch.heigvd.ihm.stickies.ui.StickiesNicerRed
+import ch.heigvd.ihm.stickies.ui.*
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridHorizontalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridVerticalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileAngles
@@ -53,7 +52,7 @@ typealias Timestamp = Long
 @Composable
 fun Pane(modifier: Modifier = Modifier) {
     // Set the initial model.
-    var model by remember { mutableStateOf(initialModel) }
+    var model by remember { mutableStateOf(Model.demo()) }
     var dragged by remember { mutableStateOf(emptySet<StickyIdentifier>()) }
     var draggedForMove by remember { mutableStateOf<Pair<StickyIdentifier, Timestamp>?>(null) }
 

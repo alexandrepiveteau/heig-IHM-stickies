@@ -1,6 +1,7 @@
 package ch.heigvd.ihm.stickies.ui.freeform
 
 import androidx.compose.ui.geometry.Offset
+import ch.heigvd.ihm.stickies.ui.Model
 
 /**
  * Calculates the offset to be applied to a cell at a certain grid index to hide it from the
@@ -97,13 +98,13 @@ fun FreeformScope.dropIndex(
 }
 
 /**
- * Calculates the amount of scroll that can be performed for a certain [FreeformModel]. This
+ * Calculates the amount of scroll that can be performed for a certain [Model]. This
  * considers the state of the model, and especially if a category can be opened (as well as how
  * many elements are in that category !).
  *
  * @return a pixel scroll amount that can not be exceeded.
  */
-fun FreeformScope.scrollableHeight(model: FreeformModel): Float {
+fun FreeformScope.scrollableHeight(model: Model): Float {
     return if (!model.categoryOpen) {
         0f
     } else {

@@ -1,13 +1,10 @@
 package ch.heigvd.ihm.stickies.ui.freeform
 
 import androidx.compose.animation.animate
-import androidx.compose.animation.asDisposableClock
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.animation.defaultFlingConfig
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.ScrollableController
 import androidx.compose.foundation.gestures.rememberScrollableController
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
@@ -26,14 +23,16 @@ import androidx.compose.ui.gesture.longPressDragGestureFilter
 import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.AnimationClockAmbient
 import androidx.compose.ui.platform.HapticFeedBackAmbient
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.zIndex
 import ch.heigvd.ihm.stickies.R
-import ch.heigvd.ihm.stickies.ui.*
+import ch.heigvd.ihm.stickies.ui.Model
+import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
+import ch.heigvd.ihm.stickies.ui.StickiesNicerRed
+import ch.heigvd.ihm.stickies.ui.StickyIdentifier
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridHorizontalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridVerticalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileAngles
@@ -63,11 +62,7 @@ fun Pane(
     var dragged by remember { mutableStateOf(emptySet<StickyIdentifier>()) }
     var draggedForMove by remember { mutableStateOf<Pair<StickyIdentifier, Timestamp>?>(null) }
 
-    Freeform(
-        modifier
-            .background(Color.StickiesFakeWhite)
-            .fillMaxSize()
-    ) {
+    Freeform(modifier) {
 
         // Prepare the scroll handlers.
         var detailScroll by remember { mutableStateOf(NoScroll()) }

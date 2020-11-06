@@ -2,8 +2,9 @@
 <resources>
 
     <style name="Theme.Stickies" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/stickies_fake_white</item>
-        <item name="android:navigationBarColor">@color/stickies_fake_white</item>
+        <item name="android:colorBackground">@color/stickies_fake_white</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">#10000000</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar">true</item>
     </style>

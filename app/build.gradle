@@ -81,6 +81,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm:0.3.3"
 
     // AndroidX and Jetpack
+    implementation "androidx.core:core-ktx:1.5.0-alpha04"
     implementation "androidx.activity:activity-ktx:1.1.0"
     implementation "com.google.android.material:material:1.2.1"
 

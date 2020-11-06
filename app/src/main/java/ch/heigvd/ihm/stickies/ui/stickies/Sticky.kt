@@ -33,7 +33,7 @@ fun Sticky(
 }
 
 private val StickyFont = TextStyle(
-    fontSize = 36.sp,
+    fontSize = 32.sp,
     lineHeight = 48.sp,
     fontFamily = GochiHand,
     fontWeight = FontWeight.Normal,
@@ -66,4 +66,4 @@ fun Sticky(
 val StickyDefaultElevation = 4.dp
 val StickyRaisedElevation = 8.dp
 
-val StickySize = 312.dp
+val StickySize = 280.dp

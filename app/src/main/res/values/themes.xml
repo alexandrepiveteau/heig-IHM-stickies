@@ -4,7 +4,8 @@
     <color name="stickies_fake_white_darker">#D4D4D4</color>
 
     <style name="Theme.Stickies" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/stickies_fake_white_darker</item>
+        <item name="android:colorBackground">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowBackground">@color/stickies_fake_white</item>
     </style>
 

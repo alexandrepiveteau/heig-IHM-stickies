@@ -1,10 +1,13 @@
 package ch.heigvd.ihm.stickies.ui.freeform
 
 import androidx.compose.animation.animate
+import androidx.compose.animation.asDisposableClock
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.animation.defaultFlingConfig
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.ScrollableController
 import androidx.compose.foundation.gestures.rememberScrollableController
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
@@ -23,6 +26,7 @@ import androidx.compose.ui.gesture.longPressDragGestureFilter
 import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.AnimationClockAmbient
 import androidx.compose.ui.platform.HapticFeedBackAmbient
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
@@ -47,12 +51,15 @@ typealias Timestamp = Long
  * A composable that displays a [Pane] of stickies. These stickies can be moved around in
  * different categories, as well as opened, deleted and created.
  *
+ * @param state the [MutableState] that contains all of the information related to the app.
  * @param modifier the [Modifier] that this pane is based on.
  */
 @Composable
-fun Pane(modifier: Modifier = Modifier) {
-    // Set the initial model.
-    var model by remember { mutableStateOf(Model.demo()) }
+fun Pane(
+    state: MutableState<Model>,
+    modifier: Modifier = Modifier,
+) {
+    var model by state
     var dragged by remember { mutableStateOf(emptySet<StickyIdentifier>()) }
     var draggedForMove by remember { mutableStateOf<Pair<StickyIdentifier, Timestamp>?>(null) }
 
@@ -138,6 +145,7 @@ fun Pane(modifier: Modifier = Modifier) {
 
                         override fun onStop(velocity: Offset) {
                             if (!model.categoryOpen) {
+
                                 model = model.categorySwap(index, dropIndex(position))
                             }
                             setDrag(NotDragging())

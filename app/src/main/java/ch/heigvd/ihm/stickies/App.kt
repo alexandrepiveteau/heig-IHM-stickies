@@ -1,6 +1,10 @@
 package ch.heigvd.ihm.stickies
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import ch.heigvd.ihm.stickies.ui.Model
+import ch.heigvd.ihm.stickies.ui.demo
 import ch.heigvd.ihm.stickies.ui.freeform.Pane
 
 /**
@@ -9,5 +13,11 @@ import ch.heigvd.ihm.stickies.ui.freeform.Pane
  */
 @Composable
 fun App() {
-    Pane()
+    // Global application state.
+    val state = remember { mutableStateOf(Model.demo()) }
+
+    // Actual screens of the application.
+    Pane(
+        state = state,
+    )
 }

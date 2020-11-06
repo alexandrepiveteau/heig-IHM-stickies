@@ -32,12 +32,12 @@ import ch.heigvd.ihm.stickies.ui.modifier.aboveOffset
 
 private val HintTextStyle = TextStyle(
     fontFamily = Archivo,
-    fontSize = 24.sp,
+    fontSize = 20.sp,
     fontWeight = FontWeight.Bold,
 )
 private val ContentTextStyle = TextStyle(
     fontFamily = Archivo,
-    fontSize = 24.sp,
+    fontSize = 20.sp,
     fontWeight = FontWeight.Bold,
 )
 
@@ -66,7 +66,7 @@ fun PlaceholderTitle(
                     Spacer(Modifier.preferredWidth(16.dp))
                     Text(title, style = HintTextStyle)
                 }
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(12.dp))
             }
             content()
         }

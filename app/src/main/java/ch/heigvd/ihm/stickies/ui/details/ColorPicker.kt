@@ -23,7 +23,7 @@ enum class SelectionColor {
 fun ColorPicker(
     selected: SelectionColor,
     onClick: (SelectionColor) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(modifier) {
         CircularPill(

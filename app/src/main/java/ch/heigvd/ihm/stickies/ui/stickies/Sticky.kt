@@ -44,7 +44,7 @@ fun Sticky(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colors.surface,
     elevation: Dp = StickyDefaultElevation,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Surface(
         modifier = modifier.preferredSize(StickySize),

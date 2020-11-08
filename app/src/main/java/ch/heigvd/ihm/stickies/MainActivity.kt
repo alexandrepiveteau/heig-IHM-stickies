@@ -1,7 +1,7 @@
 package ch.heigvd.ihm.stickies
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.platform.setContent
 import androidx.core.view.WindowCompat

@@ -1,7 +1,10 @@
 package ch.heigvd.ihm.stickies.ui.details
 
 import androidx.compose.animation.animate
-import androidx.compose.foundation.*
+import androidx.compose.foundation.AmbientContentColor
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme

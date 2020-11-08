@@ -51,13 +51,11 @@ fun TimePicker(
         NumberPicker(
                 numbers = hours,
                 state = hoursState,
-                modifier = modifier.height(260.dp)
         )
 
         NumberPicker(
                 numbers = minutes,
                 state = minutesState,
-                modifier = modifier.height(260.dp)
         )
     }
 }
@@ -66,7 +64,7 @@ fun TimePicker(
 fun NumberPicker(
         numbers: List<Int>,
         state: LazyListState,
-        modifier: Modifier = Modifier,
+        modifier: Modifier = Modifier.height(260.dp),
         fontSize: TextUnit = 40.sp,
 ) {
     val nanList = listOf(-1, -1)

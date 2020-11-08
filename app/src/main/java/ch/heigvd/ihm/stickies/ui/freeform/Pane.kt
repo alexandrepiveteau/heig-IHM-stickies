@@ -249,7 +249,7 @@ fun Pane(
                     onDragOffset = { offset ->
                         if (drag.isDragging) {
                             setDrag(Dragging(position + offset))
-                            if (isSelfOpen) {
+                            if (model.categoryOpen) {
                                 // 700ms overlay delay for dropping on the change category.
                                 if (dropIndex(position + offset) == 0) {
                                     val stickyToTime = draggedForMove

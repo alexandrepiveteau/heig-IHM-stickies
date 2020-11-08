@@ -20,6 +20,7 @@ import ch.heigvd.ihm.stickies.ui.Archivo
 import ch.heigvd.ihm.stickies.ui.Model
 import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
 import ch.heigvd.ihm.stickies.ui.demo
+import ch.heigvd.ihm.stickies.ui.details.TimePicker
 import ch.heigvd.ihm.stickies.ui.freeform.Pane
 import ch.heigvd.ihm.stickies.ui.material.GradientButton
 import dev.chrisbanes.compose.navigationBarsPadding
@@ -56,8 +57,13 @@ fun App() {
     // Display a dialog if we're currently adding a new sticky.
     if (adding) {
         Dialog(onDismissRequest = { /* Ignored. */ }) {
-            Button(onClick = { adding = false }) {
-                Text("Back to Home.")
+            Column(Modifier.background(Color.White)) {
+                TimePicker()
+
+                Button(onClick = { adding = false }) {
+                    Text("Back to Home.")
+                }
+
             }
         }
     }

@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
@@ -34,15 +35,15 @@ fun TimePicker(
 ) {
     Row(modifier) {
         val hours = (0..23).distinct()
-        val hoursState = rememberLazyListState(initialFirstVisibleItemIndex = time.hour - 2)
+        val hoursState = rememberLazyListState(initialFirstVisibleItemIndex = time.hour)
 
         val minutes = (0..59).distinct()
-        val minutesState = rememberLazyListState(initialFirstVisibleItemIndex = time.minute - 2)
+        val minutesState = rememberLazyListState(initialFirstVisibleItemIndex = time.minute)
 
         Clock(
                 time = LocalTime.of(
-                    hours[hoursState.firstVisibleItemIndex + 2],
-                    minutes[minutesState.firstVisibleItemIndex + 2],
+                    hours[hoursState.firstVisibleItemIndex],
+                    minutes[minutesState.firstVisibleItemIndex],
                 ),
                 modifier = modifier,
         )
@@ -66,13 +67,20 @@ fun NumberPicker(
         numbers: List<Int>,
         state: LazyListState,
         modifier: Modifier = Modifier,
+        fontSize: TextUnit = 40.sp,
 ) {
-    LazyColumnFor(
-            items = numbers,
+    val nanList = listOf(-1, -1)
+    val items = nanList + numbers + nanList
+    LazyColumnForIndexed(
+            items = items,
             modifier = modifier,
             state = state,
-    ) {
-        Text("%02d".format(it), fontSize = 40.sp)
+    ) { index, item ->
+        if (index == 0 || index == 1 || index == items.size - 2 || index == items.size - 1) {
+            Text("  ", fontSize = fontSize)
+        } else {
+            Text("%02d".format(item), fontSize = fontSize)
+        }
     }
 }
 

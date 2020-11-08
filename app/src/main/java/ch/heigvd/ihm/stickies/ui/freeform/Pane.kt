@@ -155,10 +155,12 @@ fun Pane(
         }
 
         // Render the category information.
+        val icon = model.categoryOpenIndex?.let { model.categories[it].icon }
+            ?: R.drawable.ic_category_inbox
         CategoryInfo(
             visible = model.categoryOpen && dragged.isEmpty(),
-            title = model.categories[model.categoryOpenIndex ?:0 ].title,
-            icon = vectorResource(R.drawable.ic_category_basket),
+            title = model.categories[model.categoryOpenIndex ?: 0].title,
+            icon = vectorResource(icon),
             onTitleChange = { title ->
                 model = model.categoryUpdateTitle(model.categoryOpenIndex, title)
             },

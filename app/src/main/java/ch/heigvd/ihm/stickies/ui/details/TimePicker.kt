@@ -18,6 +18,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.DensityAmbient
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,29 +36,33 @@ fun TimePicker(
         time: LocalTime = LocalTime.now(),
         modifier: Modifier = Modifier,
 ) {
-    Row(modifier) {
+    Row(modifier.padding(32.dp)) {
         val hours = (0..23).distinct()
         val hoursState = rememberLazyListState(initialFirstVisibleItemIndex = time.hour)
 
         val minutes = (0..59).distinct()
         val minutesState = rememberLazyListState(initialFirstVisibleItemIndex = time.minute)
 
+        val commonModifier = Modifier.padding(32.dp).align(alignment = Alignment.CenterVertically)
+
         Clock(
                 time = LocalTime.of(
                     hours[hoursState.firstVisibleItemIndex],
                     minutes[minutesState.firstVisibleItemIndex],
                 ),
-                modifier = modifier,
+                commonModifier,
         )
 
         NumberPicker(
                 numbers = hours,
                 state = hoursState,
+                commonModifier,
         )
 
         NumberPicker(
                 numbers = minutes,
                 state = minutesState,
+                commonModifier,
         )
     }
 }
@@ -64,20 +71,24 @@ fun TimePicker(
 fun NumberPicker(
         numbers: List<Int>,
         state: LazyListState,
-        modifier: Modifier = Modifier.height(260.dp),
+        modifier: Modifier = Modifier,
         fontSize: TextUnit = 40.sp,
 ) {
     val nanList = listOf(-1, -1)
     val items = nanList + numbers + nanList
+
+    val sizeInDp = with(DensityAmbient.current) { fontSize.toDp() }
+
     LazyColumnForIndexed(
             items = items,
-            modifier = modifier,
+            // don't ask me why 6.7 instead of 5, i don't know
+            modifier = modifier.height(sizeInDp.times(6.7f)),
             state = state,
     ) { index, item ->
         if (index == 0 || index == 1 || index == items.size - 2 || index == items.size - 1) {
             Text("  ", fontSize = fontSize)
         } else {
-            Text("%02d".format(item), fontSize = fontSize)
+            Text("%02d".format(item), fontSize = fontSize, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -86,9 +97,12 @@ fun NumberPicker(
 fun Clock(
         time: LocalTime,
         modifier: Modifier = Modifier,
+        clockSize: Dp = 100.dp,
 ) {
+
+    val clockRadius = with(DensityAmbient.current) { clockSize.toPx() }
+
     // General clock properties
-    val clockRadius = 200f
     val offset = Offset(clockRadius, clockRadius)
     val angleOffset = 3 / 2f
 
@@ -127,9 +141,8 @@ fun Clock(
 
     // Draw on the canvas
     Canvas(
-            modifier
-                    .height(152.dp)
-                    .width(152.dp),
+            modifier.height(clockSize.times(2))
+                    .width(clockSize.times(2))
     ) {
         // Outer circle
         drawCircle(

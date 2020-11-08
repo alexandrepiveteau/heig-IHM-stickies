@@ -66,6 +66,22 @@ data class Model(
     }
 
     /**
+     * Updates the title of a category. If the index of the said category is not valid or is null,
+     * the current [Model] will remain untouched.
+     *
+     * @param index the nullable index at which to update the model.
+     * @param title the new title to set to the category.
+     *
+     * @return the new [Model].
+     */
+    fun categoryUpdateTitle(index: Int?, title: String): Model {
+        if (index == null || index >= categories.size) return this
+        val updated = categories[index].copy(title = title)
+        val list = categories.set(index, updated)
+        return this.copy(categories = list)
+    }
+
+    /**
      * Swaps two piles with indices [first] and [second]. If the indices are identical (and within
      * the bounds), the model will remain untouched.
      *
@@ -92,6 +108,35 @@ data class Model(
             .set(second, catA)
 
         return copy(categories = categories, stickies = stickies)
+    }
+
+    /**
+     * Adds a new sticky to this [Model].
+     *
+     * @param title the [String] title of the added sticky.
+     * @param color the color to be set to the new sticky.
+     * @param highlighted true if the sticky is currently highlighted.
+     * @param toPile the pile index to which the sticky is added.
+     */
+    fun stickyAdd(
+        title: String,
+        color: Color,
+        highlighted: Boolean,
+        toPile: Int,
+    ): Model {
+        val sticky = Sticky(
+            identifier = StickyIdentifier((this.stickies.maxOfOrNull { it.key.backing } ?: 0) + 1),
+            title = title,
+            color = color,
+            highlighted = highlighted,
+            pileIndex = nextHeight,
+            category = toPile.coerceIn(0 until categories.size),
+        )
+        val updated = this.stickies.put(sticky.identifier, sticky)
+        return this.copy(
+            stickies = updated,
+            nextHeight = nextHeight + 1
+        )
     }
 
     /**

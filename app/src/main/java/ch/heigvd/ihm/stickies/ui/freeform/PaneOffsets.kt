@@ -30,8 +30,6 @@ fun FreeformScope.hidden(
 /**
  * Calculates the offset to be applied to a cell that is shown in the detail view.
  *
- * TODO : Provide some additional information related to scroll.
- *
  * @param index the grid index of the item to show.
  * @param scroll how much scroll amount there currently is.
  *

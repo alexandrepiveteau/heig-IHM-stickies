@@ -232,8 +232,18 @@ fun Pane(
                     onDragStopped = {
                         dragged = dragged - sticky.identifier
                         setDrag(NotDragging())
-                        if (!model.categoryOpen) {
+                        val toPile = model.categoryOpenIndex
+                        if (toPile == null) {
                             model = model.stickyMoveToTop(sticky.identifier, dropIndex(position))
+                        } else {
+                            val toIndex = dropIndexDetail(detailScroll, position)
+                            if (toIndex != null) {
+                                model = model.stickyMoveBeforeIndex(
+                                    identifier = sticky.identifier,
+                                    toPile = toPile,
+                                    toIndex = toIndex
+                                )
+                            }
                         }
                     },
                     onDragOffset = { offset ->

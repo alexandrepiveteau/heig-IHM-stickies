@@ -156,6 +156,46 @@ data class Model(
         )
     }
 
+    /**
+     * Moves the sticky with the provided [StickyIdentifier] to the pile with the given index,
+     * before the given index. If there are no stickies at that index, the sticky will simply be
+     * appended to the bottom of the pile.
+     *
+     * @param identifier the identifier of the moved sticky.
+     * @param toIndex the index at which the sticky should be moved. Zero is the pile top.
+     */
+    fun stickyMoveBeforeIndex(
+        identifier: StickyIdentifier,
+        toPile: Int,
+        toIndex: Int,
+    ): Model {
+        val sticky = stickies[identifier] ?: error("Missing sticky.")
+        var height = nextHeight
+        var stickies = this.stickies
+        val toShift = this.stickies
+            .asSequence()
+            .map(Map.Entry<StickyIdentifier, Sticky>::value)
+            .filter { it.category == toPile }
+            .sortedByDescending(Sticky::pileIndex)
+            .filterIndexed { index, _ -> index < toIndex }
+            .toList()
+        stickies = stickies.put(
+            sticky.identifier,
+            sticky.copy(category = toPile, pileIndex = height++),
+        )
+        // We need to reverse the list, to make sure the items we add first are actually not the
+        // ones from the start of the pile, but those that came right before our addition.
+        for (shiftSticky in toShift.asReversed()) {
+            if (shiftSticky.identifier != identifier) {
+                stickies = stickies.put(
+                    key = shiftSticky.identifier,
+                    value = shiftSticky.copy(pileIndex = height++),
+                )
+            }
+        }
+        return this.copy(stickies = stickies, nextHeight = height)
+    }
+
     // Used for companion builders.
     companion object
 }

@@ -243,6 +243,8 @@ fun Pane(
                                     toPile = toPile,
                                     toIndex = toIndex
                                 )
+                            } else if (dropIndex(position) == GridHorizontalCellCount) {
+                                model = model.stickyRemove(sticky.identifier)
                             }
                         }
                     },

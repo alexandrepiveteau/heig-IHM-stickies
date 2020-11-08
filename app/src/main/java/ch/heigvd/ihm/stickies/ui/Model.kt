@@ -140,6 +140,20 @@ data class Model(
     }
 
     /**
+     * Removes a sticky with a certain identifier. This can not be cancelled.
+     *
+     * @param identifier the identifier of the sticky that is removed.
+     *
+     * @return the updated Model, without the removed sticky.
+     */
+    fun stickyRemove(
+        identifier: StickyIdentifier,
+    ): Model {
+        val list = this.stickies.remove(identifier)
+        return this.copy(stickies = list)
+    }
+
+    /**
      * Moves the sticky with the provided [StickyIdentifier] to the pile with the given index.
      *
      * @param toPile the pile to which the sticky is moved.

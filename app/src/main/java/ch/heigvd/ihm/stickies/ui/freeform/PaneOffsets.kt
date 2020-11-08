@@ -53,6 +53,55 @@ fun FreeformScope.detail(
 }
 
 /**
+ * Calculates the drop index of an item for the category detail. If the element is dropped between
+ * some existing cards, it will simply be ignored.
+ *
+ * TODO : Make sure that drops after the list works no matter what.
+ *
+ * @param scroll how much scroll amount there currently is.
+ * @param position the [Offset] at which the item is dropped.
+ *
+ * @return null if no drop target can be found, or the drop index (starting at 0) otherwise.
+ */
+fun FreeformScope.dropIndexDetail(
+    scroll: ScrollState,
+    position: Offset,
+): Int? {
+    val dropPosition = Offset(
+        x = position.x + cellSize.x / 2,
+        y = position.y + scroll.amount + cellSize.y / 2,
+    ) - origin
+    val col1Start = 2 * spacer.x + cellSize.x
+    val col1End = col1Start + cellSize.x
+    val col2Start = col1End + spacer.x
+    val col2End = col2Start + cellSize.x
+
+    val column = when (dropPosition.x) {
+        in col1Start..col1End -> 1
+        in col2Start..col2End -> 2
+        else -> {
+            return null
+        }
+    }
+
+    // Incremental row calculation. We could do that in O(1) too.
+    var row = 1
+    var vertical = 0.5f * spacer.y
+    while (true) {
+        if (dropPosition.y < vertical) {
+            return null
+        } else if (dropPosition.y < vertical + cellSize.y) {
+            break
+        } else {
+            vertical += cellSize.y + spacer.y
+            row++
+        }
+    }
+
+    return (((row - 1) * 2) + column) - 1
+}
+
+/**
  * Calculates the offset at which an item at a certain index should be positioned to be at rest.
  *
  * @param index the index for which we want the rest offset.

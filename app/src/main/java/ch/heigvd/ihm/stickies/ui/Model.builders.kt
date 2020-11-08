@@ -9,7 +9,7 @@ private val DemoCategories = listOf(
     Category("Inbox", R.drawable.ic_category_inbox),
     Category("Groceries", R.drawable.ic_category_basket),
     Category("Medical Stuff", R.drawable.ic_category_medical),
-    Category("Appointments", R.drawable.ic_category_basket),
+    Category("Appointments", R.drawable.ic_category_calendar),
     Category("Exercise", R.drawable.ic_category_exercise),
     Category("Medor", R.drawable.ic_category_bone),
 )

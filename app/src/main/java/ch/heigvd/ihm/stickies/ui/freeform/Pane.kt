@@ -155,10 +155,12 @@ fun Pane(
         }
 
         // Render the category information.
+        val icon = model.categoryOpenIndex?.let { model.categories[it].icon }
+            ?: R.drawable.ic_category_inbox
         CategoryInfo(
             visible = model.categoryOpen && dragged.isEmpty(),
-            title = model.categories[model.categoryOpenIndex ?:0 ].title,
-            icon = vectorResource(R.drawable.ic_category_basket),
+            title = model.categories[model.categoryOpenIndex ?: 0].title,
+            icon = vectorResource(icon),
             onTitleChange = { title ->
                 model = model.categoryUpdateTitle(model.categoryOpenIndex, title)
             },
@@ -230,14 +232,26 @@ fun Pane(
                     onDragStopped = {
                         dragged = dragged - sticky.identifier
                         setDrag(NotDragging())
-                        if (!model.categoryOpen) {
+                        val toPile = model.categoryOpenIndex
+                        if (toPile == null) {
                             model = model.stickyMoveToTop(sticky.identifier, dropIndex(position))
+                        } else {
+                            val toIndex = dropIndexDetail(detailScroll, position)
+                            if (toIndex != null) {
+                                model = model.stickyMoveBeforeIndex(
+                                    identifier = sticky.identifier,
+                                    toPile = toPile,
+                                    toIndex = toIndex
+                                )
+                            } else if (dropIndex(position) == GridHorizontalCellCount) {
+                                model = model.stickyRemove(sticky.identifier)
+                            }
                         }
                     },
                     onDragOffset = { offset ->
                         if (drag.isDragging) {
                             setDrag(Dragging(position + offset))
-                            if (isSelfOpen) {
+                            if (model.categoryOpen) {
                                 // 700ms overlay delay for dropping on the change category.
                                 if (dropIndex(position + offset) == 0) {
                                     val stickyToTime = draggedForMove

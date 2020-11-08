@@ -79,5 +79,5 @@ private data class FreeformScopeImpl(
     override val origin: Offset,
     override val size: Offset,
     override val cellSize: Offset,
-    override val spacer: Offset
+    override val spacer: Offset,
 ) : FreeformScope

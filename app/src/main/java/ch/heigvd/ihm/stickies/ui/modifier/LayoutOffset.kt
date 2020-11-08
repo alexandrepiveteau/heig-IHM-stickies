@@ -24,7 +24,7 @@ fun Modifier.offset(
  */
 fun Modifier.offsetPx(
     x: Float = 0f,
-    y: Float = 0f
+    y: Float = 0f,
 ) = this.then(OffsetPxModifier(x, y))
 
 private data class OffsetPxModifier(
@@ -33,7 +33,7 @@ private data class OffsetPxModifier(
 ) : LayoutModifier {
     override fun MeasureScope.measure(
         measurable: Measurable,
-        constraints: Constraints
+        constraints: Constraints,
     ): MeasureScope.MeasureResult {
         val placeable = measurable.measure(constraints)
         return layout(placeable.width, placeable.height) {

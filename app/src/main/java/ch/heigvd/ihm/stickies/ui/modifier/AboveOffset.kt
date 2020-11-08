@@ -15,7 +15,7 @@ fun Modifier.aboveOffset(): Modifier = this.then(AboveOffset())
 private class AboveOffset : LayoutModifier {
     override fun MeasureScope.measure(
         measurable: Measurable,
-        constraints: Constraints
+        constraints: Constraints,
     ): MeasureScope.MeasureResult {
         val placeable = measurable.measure(constraints)
         return layout(placeable.width, placeable.height) {

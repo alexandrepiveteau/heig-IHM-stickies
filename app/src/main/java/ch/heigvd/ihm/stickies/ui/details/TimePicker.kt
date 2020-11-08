@@ -4,12 +4,17 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.Typeface
 import androidx.compose.animation.animate
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumnForIndexed
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -29,15 +34,17 @@ import java.time.LocalTime
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.random.Random
 
 @Composable
 fun TimePicker(
-        time: LocalTime = LocalTime.now(),
-        modifier: Modifier = Modifier,
+    time: LocalTime = LocalTime.now(),
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit = 40.sp,
 ) {
     Row(modifier.padding(32.dp)) {
+        val fontSizeInPx = with(DensityAmbient.current) { fontSize.toPx() }
         val hours = (0..23).distinct()
+
         val hoursState = rememberLazyListState(initialFirstVisibleItemIndex = time.hour)
 
         val minutes = (0..59).distinct()
@@ -46,33 +53,35 @@ fun TimePicker(
         val commonModifier = Modifier.padding(32.dp).align(alignment = Alignment.CenterVertically)
 
         Clock(
-                time = LocalTime.of(
-                    hours[hoursState.firstVisibleItemIndex],
-                    minutes[minutesState.firstVisibleItemIndex],
-                ),
-                commonModifier,
+            time = LocalTime.of(
+                hours[hoursState.firstVisibleItemIndex],
+                minutes[minutesState.firstVisibleItemIndex],
+            ),
+            modifier = commonModifier,
         )
 
         NumberPicker(
-                numbers = hours,
-                state = hoursState,
-                commonModifier,
+            numbers = hours,
+            state = hoursState,
+            modifier = commonModifier,
+            fontSize = fontSize,
         )
 
         NumberPicker(
-                numbers = minutes,
-                state = minutesState,
-                commonModifier,
+            numbers = minutes,
+            state = minutesState,
+            modifier = commonModifier,
+            fontSize = fontSize,
         )
     }
 }
 
 @Composable
 fun NumberPicker(
-        numbers: List<Int>,
-        state: LazyListState,
-        modifier: Modifier = Modifier,
-        fontSize: TextUnit = 40.sp,
+    numbers: List<Int>,
+    state: LazyListState,
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit,
 ) {
     val nanList = listOf(-1, -1)
     val items = nanList + numbers + nanList
@@ -80,10 +89,10 @@ fun NumberPicker(
     val sizeInDp = with(DensityAmbient.current) { fontSize.toDp() }
 
     LazyColumnForIndexed(
-            items = items,
-            // don't ask me why 6.7 instead of 5, i don't know
-            modifier = modifier.height(sizeInDp.times(6.7f)),
-            state = state,
+        items = items,
+        // don't ask me why 6.7 instead of 5, i don't know
+        modifier = modifier.height(sizeInDp.times(6.7f)),
+        state = state,
     ) { index, item ->
         if (index == 0 || index == 1 || index == items.size - 2 || index == items.size - 1) {
             Text("  ", fontSize = fontSize)
@@ -95,9 +104,9 @@ fun NumberPicker(
 
 @Composable
 fun Clock(
-        time: LocalTime,
-        modifier: Modifier = Modifier,
-        clockSize: Dp = 100.dp,
+    time: LocalTime,
+    modifier: Modifier = Modifier,
+    clockSize: Dp = 100.dp,
 ) {
 
     val clockRadius = with(DensityAmbient.current) { clockSize.toPx() }
@@ -141,19 +150,19 @@ fun Clock(
 
     // Draw on the canvas
     Canvas(
-            modifier.height(clockSize.times(2))
-                    .width(clockSize.times(2))
+        modifier.height(clockSize.times(2))
+            .width(clockSize.times(2))
     ) {
         // Outer circle
         drawCircle(
-                color = Color(0xFF262626),
-                radius = clockRadius,
-                center = offset,
+            color = Color(0xFF262626),
+            radius = clockRadius,
+            center = offset,
         )
         drawCircle(
-                color = Color(0xFFFFFFFF),
-                radius = 0.8f * clockRadius,
-                center = offset,
+            color = Color(0xFFFFFFFF),
+            radius = 0.8f * clockRadius,
+            center = offset,
         )
 
         // draw numbers
@@ -169,46 +178,46 @@ fun Clock(
                 var rect = Rect()
                 paint.getTextBounds(x.toString(), 0, x.toString().length, rect)
                 canvas.nativeCanvas.drawText(
-                        "${x}",
-                        offset.x + numbersPosMult * clockRadius * cos(hTruncatedAngle(x)) - rect.right / 2f,
-                        offset.y + numbersPosMult * clockRadius * sin(hTruncatedAngle(x)) - rect.top / 2f,
-                        paint,
+                    "${x}",
+                    offset.x + numbersPosMult * clockRadius * cos(hTruncatedAngle(x)) - rect.right / 2f,
+                    offset.y + numbersPosMult * clockRadius * sin(hTruncatedAngle(x)) - rect.top / 2f,
+                    paint,
                 )
             }
         }
         // Minutes hand
         drawLine(
-                color = Color(0xFFC22D2D),
-                start = offset,
-                end = offset.plus(
-                        Offset(
-                                cos(mAngle),
-                                sin(mAngle)
-                        ).times(minutesLengthMult * clockRadius)
-                ),
-                strokeWidth = minutesWidth,
-                cap = StrokeCap.Round,
+            color = Color(0xFFC22D2D),
+            start = offset,
+            end = offset.plus(
+                Offset(
+                    cos(mAngle),
+                    sin(mAngle)
+                ).times(minutesLengthMult * clockRadius)
+            ),
+            strokeWidth = minutesWidth,
+            cap = StrokeCap.Round,
         )
 
         // Hours hand
         drawLine(
-                color = Color(0xFF262626),
-                start = offset,
-                end = offset.plus(
-                        Offset(
-                                cos(hAngle),
-                                sin(hAngle),
-                        ).times(hoursLengthMult * clockRadius)
-                ),
-                strokeWidth = hoursWidth,
-                cap = StrokeCap.Round,
+            color = Color(0xFF262626),
+            start = offset,
+            end = offset.plus(
+                Offset(
+                    cos(hAngle),
+                    sin(hAngle),
+                ).times(hoursLengthMult * clockRadius)
+            ),
+            strokeWidth = hoursWidth,
+            cap = StrokeCap.Round,
         )
 
         // Center dot
         drawCircle(
-                color = Color(0xFF262626),
-                radius = 0.06f * clockRadius,
-                center = offset,
+            color = Color(0xFF262626),
+            radius = 0.06f * clockRadius,
+            center = offset,
         )
     }
 }
@@ -218,7 +227,7 @@ fun Clock(
 private fun TimePickerPreview() {
     Row(Modifier.background(Color.White)) {
         TimePicker(
-                modifier = Modifier.align(alignment = Alignment.CenterVertically),
+            modifier = Modifier.align(alignment = Alignment.CenterVertically),
         )
     }
 }

@@ -111,6 +111,35 @@ data class Model(
     }
 
     /**
+     * Adds a new sticky to this [Model].
+     *
+     * @param title the [String] title of the added sticky.
+     * @param color the color to be set to the new sticky.
+     * @param highlighted true if the sticky is currently highlighted.
+     * @param toPile the pile index to which the sticky is added.
+     */
+    fun stickyAdd(
+        title: String,
+        color: Color,
+        highlighted: Boolean,
+        toPile: Int,
+    ): Model {
+        val sticky = Sticky(
+            identifier = StickyIdentifier((this.stickies.maxOfOrNull { it.key.backing } ?: 0) + 1),
+            title = title,
+            color = color,
+            highlighted = highlighted,
+            pileIndex = nextHeight,
+            category = toPile.coerceIn(0 until categories.size),
+        )
+        val updated = this.stickies.put(sticky.identifier, sticky)
+        return this.copy(
+            stickies = updated,
+            nextHeight = nextHeight + 1
+        )
+    }
+
+    /**
      * Moves the sticky with the provided [StickyIdentifier] to the pile with the given index.
      *
      * @param toPile the pile to which the sticky is moved.

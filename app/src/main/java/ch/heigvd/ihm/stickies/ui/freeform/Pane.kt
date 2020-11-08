@@ -6,10 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberScrollableController
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.*
@@ -42,6 +39,7 @@ import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.StickyMinStiffness
 import ch.heigvd.ihm.stickies.ui.modifier.offset
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.*
+import dev.chrisbanes.compose.navigationBarsPadding
 
 typealias Timestamp = Long
 
@@ -155,6 +153,21 @@ fun Pane(
                 }
             }
         }
+
+        // Render the category information.
+        CategoryInfo(
+            visible = model.categoryOpen && dragged.isEmpty(),
+            title = model.categories[model.categoryOpenIndex ?:0 ].title,
+            icon = vectorResource(R.drawable.ic_category_basket),
+            onTitleChange = { title ->
+                model = model.categoryUpdateTitle(model.categoryOpenIndex, title)
+            },
+            onBack = { model = model.categoryClose() },
+            modifier = Modifier.offset(rest(0))
+                .navigationBarsPadding()
+                .padding(bottom = 24.dp)
+                .zIndex(4f)
+        )
 
         // Prepare pile information.
         val pileIndex = IntArray(GridVerticalCellCount * GridHorizontalCellCount) { -1 }

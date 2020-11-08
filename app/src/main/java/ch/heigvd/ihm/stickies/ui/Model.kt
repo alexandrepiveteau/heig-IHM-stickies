@@ -66,6 +66,22 @@ data class Model(
     }
 
     /**
+     * Updates the title of a category. If the index of the said category is not valid or is null,
+     * the current [Model] will remain untouched.
+     *
+     * @param index the nullable index at which to update the model.
+     * @param title the new title to set to the category.
+     *
+     * @return the new [Model].
+     */
+    fun categoryUpdateTitle(index: Int?, title: String): Model {
+        if (index == null || index >= categories.size) return this
+        val updated = categories[index].copy(title = title)
+        val list = categories.set(index, updated)
+        return this.copy(categories = list)
+    }
+
+    /**
      * Swaps two piles with indices [first] and [second]. If the indices are identical (and within
      * the bounds), the model will remain untouched.
      *

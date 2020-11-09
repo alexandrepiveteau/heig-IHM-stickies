@@ -22,25 +22,22 @@ fun ExpendableButton(
     expanded: Boolean,
     onClick: (Boolean) -> Unit,
     color: Color,
-    text: String,
+    expandedText: String,
+    contractedText: String,
     modifier: Modifier = Modifier,
 ) {
     val background = Color.White
     Column(
         modifier
             .background(background, CircleShape)
-            .border(1.dp, color.copy(alpha = 0.4f), CircleShape)
+            .border(2.dp, color.copy(alpha = 0.4f), CircleShape)
             .clickable(onClick = { onClick(!expanded) }, indication = null)
             .padding(8.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Providers(AmbientContentColor provides contentColorFor(color)) {
-            if (!expanded) {
-                Text(text = "$text +", style = MaterialTheme.typography.subtitle1)
-            } else {
-                Text(text = "$text -", style = MaterialTheme.typography.subtitle1)
-            }
+            Text(text = if (expanded) expandedText else contractedText, style = MaterialTheme.typography.subtitle1, modifier = Modifier.padding(4.dp))
         }
     }
 }
@@ -54,7 +51,8 @@ private fun ExpendableButtonPreview() {
             expanded = expanded,
             onClick = setExpanded,
             color = Color(0x999999),
-            text = "More settings",
+            contractedText = "More settings",
+            expandedText = "Less settings",
         )
     }
 }

@@ -29,6 +29,7 @@ fun StickyDetails(
             color = Color.White,
             modifier = Modifier
                 .padding(
+                    horizontal = 32.dp,
                     vertical = 8.dp,
                 )
                 .align(Alignment.CenterHorizontally),
@@ -76,6 +77,7 @@ fun StickyDetails(
             color = Color.White,
             modifier = Modifier
                 .padding(
+                    horizontal = 32.dp,
                     vertical = 8.dp,
                 )
                 .align(Alignment.CenterHorizontally),

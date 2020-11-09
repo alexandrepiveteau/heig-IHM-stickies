@@ -20,15 +20,15 @@ import androidx.compose.ui.gesture.scrollorientationlocking.Orientation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.HapticFeedBackAmbient
+import androidx.compose.ui.platform.LifecycleOwnerAmbient
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.lifecycleScope
 import ch.heigvd.ihm.stickies.R
-import ch.heigvd.ihm.stickies.ui.Model
-import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
-import ch.heigvd.ihm.stickies.ui.StickiesNicerRed
-import ch.heigvd.ihm.stickies.ui.StickyIdentifier
+import ch.heigvd.ihm.stickies.ui.*
+import ch.heigvd.ihm.stickies.ui.categoryInfo.EditCategoryInfoDialog
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridHorizontalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridVerticalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileAngles
@@ -48,11 +48,13 @@ typealias Timestamp = Long
  * different categories, as well as opened, deleted and created.
  *
  * @param state the [MutableState] that contains all of the information related to the app.
+ * @param undos the [MutableState] that contains all the information related to the undos.
  * @param modifier the [Modifier] that this pane is based on.
  */
 @Composable
 fun Pane(
     state: MutableState<Model>,
+    undos: MutableState<Undos>,
     modifier: Modifier = Modifier,
 ) {
     var model by state
@@ -157,19 +159,30 @@ fun Pane(
         // Render the category information.
         val icon = model.categoryOpenIndex?.let { model.categories[it].icon }
             ?: R.drawable.ic_category_inbox
+        val (editCategory, setEditCategory) = remember { mutableStateOf(false) }
         CategoryInfo(
             visible = model.categoryOpen && dragged.isEmpty(),
             title = model.categories[model.categoryOpenIndex ?: 0].title,
             icon = vectorResource(icon),
-            onTitleChange = { title ->
-                model = model.categoryUpdateTitle(model.categoryOpenIndex, title)
-            },
+            onEditClick = { setEditCategory(true) },
             onBack = { model = model.categoryClose() },
             modifier = Modifier.offset(rest(0))
                 .navigationBarsPadding()
                 .padding(bottom = 24.dp)
                 .zIndex(4f)
         )
+        val categoryIndex = model.categoryOpenIndex
+        if (editCategory && categoryIndex != null) {
+            EditCategoryInfoDialog(
+                title = model.categories[categoryIndex].title,
+                icon = model.categories[categoryIndex].icon,
+                onConfirm = { t, i ->
+                    model = model.categoryUpdate(categoryIndex, t, i)
+                    setEditCategory(false)
+                },
+                onCancel = { setEditCategory(false) },
+            )
+        }
 
         // Prepare pile information.
         val pileIndex = IntArray(GridVerticalCellCount * GridHorizontalCellCount) { -1 }
@@ -204,6 +217,7 @@ fun Pane(
                     else -> rest(index = sticky.category)
                 }
                 val position = drag.position ?: stickyRestOffset
+                val scope = LifecycleOwnerAmbient.current.lifecycleScope
 
                 FreeformSticky(
                     detailed = isSelfOpen,
@@ -244,7 +258,9 @@ fun Pane(
                                     toIndex = toIndex
                                 )
                             } else if (dropIndex(position) == GridHorizontalCellCount) {
-                                model = model.stickyRemove(sticky.identifier)
+                                val (updated, undo) = model.stickyRemove(sticky.identifier)
+                                scope.undoAfter(undos, undo)
+                                model = updated
                             }
                         }
                     },

@@ -1,10 +1,52 @@
 package ch.heigvd.ihm.stickies.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.Color
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentHashMapOf
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+typealias Undo = (Model) -> Model
+
+// TODO : Clean this up at some point.
+fun CoroutineScope.undoAfter(model: MutableState<Undos>, undo: Undo) {
+    launch {
+        model.value = model.value.add(undo)
+        delay(5000)
+        model.value = model.value.remove(undo)
+    }
+}
+
+data class Undos(
+    private val backing: PersistentList<Undo> = persistentListOf(),
+) {
+    val isEmpty: Boolean
+        get() = backing.isEmpty()
+
+    val isNotEmpty: Boolean
+        get() = backing.isNotEmpty()
+
+    fun add(undo: Undo): Undos {
+        return copy(backing = backing.add(undo))
+    }
+
+    fun remove(undo: Undo): Undos {
+        return copy(backing = backing.removeAll { it === undo })
+    }
+
+    fun applyAll(model: Model): Pair<Model, Undos> {
+        var base = model
+        for (undo in backing) {
+            base = undo(model)
+        }
+        return base to Undos()
+    }
+}
 
 inline class StickyIdentifier(
     val backing: Long,
@@ -71,12 +113,13 @@ data class Model(
      *
      * @param index the nullable index at which to update the model.
      * @param title the new title to set to the category.
+     * @param icon the new icon to set to the category.
      *
      * @return the new [Model].
      */
-    fun categoryUpdateTitle(index: Int?, title: String): Model {
+    fun categoryUpdate(index: Int?, title: String, @DrawableRes icon: Int): Model {
         if (index == null || index >= categories.size) return this
-        val updated = categories[index].copy(title = title)
+        val updated = categories[index].copy(title = title, icon = icon)
         val list = categories.set(index, updated)
         return this.copy(categories = list)
     }
@@ -148,9 +191,19 @@ data class Model(
      */
     fun stickyRemove(
         identifier: StickyIdentifier,
-    ): Model {
+    ): Pair<Model, Undo> {
+        val maybeSticky = this.stickies[identifier]
         val list = this.stickies.remove(identifier)
-        return this.copy(stickies = list)
+        return this.copy(stickies = list) to { model ->
+            maybeSticky?.let {
+                model.stickyAdd(
+                    title = maybeSticky.title,
+                    color = maybeSticky.color,
+                    highlighted = maybeSticky.highlighted,
+                    toPile = maybeSticky.category,
+                )
+            } ?: model
+        }
     }
 
     /**

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
+import ch.heigvd.ihm.stickies.ui.modifier.drawVerticalOverlay
 import java.time.LocalTime
 import kotlin.math.PI
 import kotlin.math.cos
@@ -40,12 +41,16 @@ fun TimePicker(
         val fontSizeInPx = with(DensityAmbient.current) { fontSize.toPx() }
         val hours = (0..23).distinct()
 
-        val hoursState = rememberLazyListState(initialFirstVisibleItemIndex = time.hour, initialFirstVisibleItemScrollOffset = 45)
+        val hoursState = rememberLazyListState(initialFirstVisibleItemIndex = time.hour,
+            initialFirstVisibleItemScrollOffset = 45)
 
         val minutes = (0..59).distinct()
-        val minutesState = rememberLazyListState(initialFirstVisibleItemIndex = time.minute, initialFirstVisibleItemScrollOffset = 45)
+        val minutesState = rememberLazyListState(initialFirstVisibleItemIndex = time.minute,
+            initialFirstVisibleItemScrollOffset = 45)
 
-        val commonModifier = Modifier.padding(32.dp).align(alignment = Alignment.CenterVertically)
+        val commonModifier = Modifier
+            .padding(horizontal = 32.dp)
+            .align(alignment = Alignment.CenterVertically)
 
         Clock(
             time = LocalTime.of(
@@ -55,31 +60,23 @@ fun TimePicker(
             modifier = commonModifier,
         )
 
-        Box(
+        Row(
             Modifier
-            .background(
-                VerticalGradient(
-                    listOf(Color.Black, Color.Transparent, Color.Black),
-                    0f,
-                    575f,
-                )
-            )
+                .padding(vertical = 32.dp)
+                .drawVerticalOverlay()
         ) {
-            Row() {
-                NumberPicker(
-                    numbers = hours,
-                    state = hoursState,
-                    modifier = commonModifier,
-                    fontSize = fontSize,
-                )
-
-                NumberPicker(
-                    numbers = minutes,
-                    state = minutesState,
-                    modifier = commonModifier,
-                    fontSize = fontSize,
-                )
-            }
+            NumberPicker(
+                numbers = hours,
+                state = hoursState,
+                modifier = commonModifier,
+                fontSize = fontSize,
+            )
+            NumberPicker(
+                numbers = minutes,
+                state = minutesState,
+                modifier = commonModifier,
+                fontSize = fontSize,
+            )
         }
     }
 }

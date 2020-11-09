@@ -30,6 +30,22 @@ private val AvailableIcons = listOf(
     R.drawable.ic_category_exercise,
     R.drawable.ic_category_inbox,
     R.drawable.ic_category_medical,
+    R.drawable.ic_category_bitcoin,
+    R.drawable.ic_category_tray,
+    R.drawable.ic_category_place,
+    R.drawable.ic_category_bag,
+    R.drawable.ic_category_flag,
+    R.drawable.ic_category_wallet,
+    R.drawable.ic_category_strongbox,
+    R.drawable.ic_category_lightbulb,
+    R.drawable.ic_category_planet,
+    R.drawable.ic_category_toy,
+    R.drawable.ic_category_chicken,
+    R.drawable.ic_category_smile,
+    R.drawable.ic_category_gift,
+    R.drawable.ic_category_music,
+    R.drawable.ic_category_code,
+    R.drawable.ic_category_phone,
 )
 private const val GridHorizontalCellCount = 8
 
@@ -57,7 +73,7 @@ fun EditCategoryInfoDialog(
             val (newText, setNewText) = remember(title) { mutableStateOf(title) }
             val (newIcon, setNewIcon) = remember(icon) { mutableStateOf(icon) }
 
-            Surface(Modifier.preferredWidth(400.dp), shape = RoundedCornerShape(16.dp)) {
+            Surface(Modifier.preferredWidth(420.dp), shape = RoundedCornerShape(16.dp)) {
                 Column(Modifier.padding(16.dp)) {
                     Text("Edit category", style = MaterialTheme.typography.h6)
                     Text("Name",

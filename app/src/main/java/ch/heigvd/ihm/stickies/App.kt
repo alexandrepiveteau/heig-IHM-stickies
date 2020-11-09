@@ -7,10 +7,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
 import androidx.compose.material.Icon
-import androidx.compose.material.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,8 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ch.heigvd.ihm.stickies.ui.*
+import ch.heigvd.ihm.stickies.ui.details.NewSticky
 import ch.heigvd.ihm.stickies.ui.details.Overlay
-import ch.heigvd.ihm.stickies.ui.details.StickyDetails
 import ch.heigvd.ihm.stickies.ui.freeform.Pane
 import ch.heigvd.ihm.stickies.ui.freeform.UndoButton
 import ch.heigvd.ihm.stickies.ui.material.GradientButton
@@ -82,35 +79,14 @@ fun App() {
 
     // Display a dialog if we're currently adding a new sticky.
     if (adding) {
-        Overlay() {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(
-                ) {
-                    StickyDetails()
-
-                    Spacer(
-                        Modifier.height(16.dp),
-                    )
-
-                    Button(
-                        onClick = { adding = false },
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .background(Color.White),
-                    ) {
-                        Text("Back to Home.")
-                    }
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color.White,
-                    modifier = Modifier.size(300.dp).padding(32.dp)
-                ) {}
-            }
+        Overlay {
+            NewSticky(
+                onCancel = { adding = false },
+                onNewSticky = { title, color ->
+                    state.value = state.value.stickyAdd(title, color, false, 0)
+                    adding = false
+                },
+            )
         }
     }
 }

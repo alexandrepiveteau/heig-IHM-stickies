@@ -8,9 +8,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumnForIndexed
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,6 +78,7 @@ fun TimePicker(
     }
 }
 
+@OptIn(ExperimentalLazyDsl::class)
 @Composable
 fun NumberPicker(
     numbers: List<Int>,
@@ -87,24 +86,17 @@ fun NumberPicker(
     modifier: Modifier = Modifier,
     fontSize: TextUnit,
 ) {
-    val beginningList = listOf(numbers[0], numbers[0])
-    val endList =
-        listOf(numbers[numbers.size - 1], numbers[numbers.size - 1], numbers[numbers.size - 1])
-    val items = beginningList + numbers + endList
-
     val sizeInDp = with(DensityAmbient.current) { fontSize.toDp() }
 
-    LazyColumnForIndexed(
-        items = items,
-        // don't ask me why 6.7 instead of 5, i don't know
+    LazyColumn(
         modifier = modifier.height(sizeInDp.times(6.7f)),
         state = state,
-    ) { index, item ->
-        if (index == 0 || index == 1 || index == items.size - 3 || index == items.size - 2 || index == items.size - 1) {
-            Text("  ", fontSize = fontSize)
-        } else {
+    ) {
+        repeat(2) { item { Text("  ", fontSize = fontSize) } }
+        items(numbers) { item ->
             Text("%02d".format(item), fontSize = fontSize, fontWeight = FontWeight.Bold)
         }
+        repeat(3) { item { Text("  ", fontSize = fontSize) } }
     }
 }
 

@@ -3,12 +3,16 @@ package ch.heigvd.ihm.stickies.ui.freeform
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
+import androidx.compose.material.ripple.RippleIndication
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.drawLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.VectorAsset
@@ -22,6 +26,12 @@ import ch.heigvd.ihm.stickies.R
 import ch.heigvd.ihm.stickies.ui.Archivo
 import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
 import ch.heigvd.ihm.stickies.ui.stickies.StickySize
+
+private val TitleTextStyle = TextStyle(
+    fontFamily = Archivo,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 16.sp,
+)
 
 private val InfoTextStyle = TextStyle(
     fontFamily = Archivo,
@@ -41,7 +51,7 @@ fun CategoryInfo(
     visible: Boolean,
     title: String,
     icon: VectorAsset,
-    onTitleChange: (String) -> Unit,
+    onEditClick: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -54,10 +64,7 @@ fun CategoryInfo(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(icon, Modifier.drawLayer(scaleY = 1.5f, scaleX = 1.5f))
                     Spacer(Modifier.width(32.dp))
-                    TextField(
-                        value = title,
-                        onValueChange = onTitleChange,
-                    )
+                    CategoryTitle(title, onClick = onEditClick)
                 }
                 Spacer(Modifier.weight(1f, true))
                 Text(
@@ -70,6 +77,28 @@ fun CategoryInfo(
                 })
             }
         }
+    }
+}
+
+@Composable
+private fun CategoryTitle(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier
+            .clip(CircleShape)
+            .clickable(onClick = onClick, indication = RippleIndication())
+            .border(2.dp, Color.Black.copy(alpha = 0.2f), CircleShape)
+            .padding(vertical = 16.dp, horizontal = 24.dp),
+        Arrangement.SpaceAround,
+        Alignment.CenterVertically,
+    )
+    {
+        Text(text, style = TitleTextStyle)
+        Spacer(Modifier.width(16.dp))
+        Icon(vectorResource(R.drawable.ic_action_edit))
     }
 }
 
@@ -110,7 +139,7 @@ private fun CategoryInfoPreview() {
         visible = true,
         title = "Groceries",
         icon = vectorResource(R.drawable.ic_category_basket),
-        onTitleChange = {},
+        onEditClick = {},
         onBack = {},
     )
 }

@@ -71,12 +71,13 @@ data class Model(
      *
      * @param index the nullable index at which to update the model.
      * @param title the new title to set to the category.
+     * @param icon the new icon to set to the category.
      *
      * @return the new [Model].
      */
-    fun categoryUpdateTitle(index: Int?, title: String): Model {
+    fun categoryUpdate(index: Int?, title: String, @DrawableRes icon: Int): Model {
         if (index == null || index >= categories.size) return this
-        val updated = categories[index].copy(title = title)
+        val updated = categories[index].copy(title = title, icon = icon)
         val list = categories.set(index, updated)
         return this.copy(categories = list)
     }

@@ -29,6 +29,7 @@ import ch.heigvd.ihm.stickies.ui.Model
 import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
 import ch.heigvd.ihm.stickies.ui.StickiesNicerRed
 import ch.heigvd.ihm.stickies.ui.StickyIdentifier
+import ch.heigvd.ihm.stickies.ui.categoryInfo.EditCategoryInfoDialog
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridHorizontalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.FreeformConstants.GridVerticalCellCount
 import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.PileAngles
@@ -157,19 +158,30 @@ fun Pane(
         // Render the category information.
         val icon = model.categoryOpenIndex?.let { model.categories[it].icon }
             ?: R.drawable.ic_category_inbox
+        val (editCategory, setEditCategory) = remember { mutableStateOf(false) }
         CategoryInfo(
             visible = model.categoryOpen && dragged.isEmpty(),
             title = model.categories[model.categoryOpenIndex ?: 0].title,
             icon = vectorResource(icon),
-            onTitleChange = { title ->
-                model = model.categoryUpdateTitle(model.categoryOpenIndex, title)
-            },
+            onEditClick = { setEditCategory(true) },
             onBack = { model = model.categoryClose() },
             modifier = Modifier.offset(rest(0))
                 .navigationBarsPadding()
                 .padding(bottom = 24.dp)
                 .zIndex(4f)
         )
+        val categoryIndex = model.categoryOpenIndex
+        if (editCategory && categoryIndex != null) {
+            EditCategoryInfoDialog(
+                title = model.categories[categoryIndex].title,
+                icon = model.categories[categoryIndex].icon,
+                onConfirm = { t, i ->
+                    model = model.categoryUpdate(categoryIndex, t, i)
+                    setEditCategory(false)
+                },
+                onCancel = { setEditCategory(false) },
+            )
+        }
 
         // Prepare pile information.
         val pileIndex = IntArray(GridVerticalCellCount * GridHorizontalCellCount) { -1 }

@@ -1,7 +1,11 @@
 package ch.heigvd.ihm.stickies.ui.details
 
+import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -10,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
-import java.time.LocalTime
 
 @Composable
 fun StickyDetails(
@@ -20,58 +23,91 @@ fun StickyDetails(
     val (expanded, setExpanded) = remember { mutableStateOf(false) }
     val (color, setColor) = remember { mutableStateOf(SelectionColor.Pink) }
 
-    Column(modifier
-        .padding(32.dp)
-    ) {
-        DatePicker(
-            selected = dates,
-            onClick = { date ->
-                if (dates.contains(date)) {
-                    setDates(dates - date)
-                } else {
-                    setDates(dates + date)
+    Column(modifier) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White,
+            modifier = Modifier
+                .padding(
+                    vertical = 8.dp,
+                )
+                .align(Alignment.CenterHorizontally),
+
+        ) {
+            Column(
+                Modifier
+                    .padding(32.dp)
+                    .width(90.dp.times(7))
+            ) {
+                DatePicker(
+                    selected = dates,
+                    onClick = { date ->
+                        if (dates.contains(date)) {
+                            setDates(dates - date)
+                        } else {
+                            setDates(dates + date)
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally),
+                )
+
+                ExpendableButton(
+                    expanded = expanded,
+                    onClick = setExpanded,
+                    color = Color(0x999999),
+                    contractedText = "More settings",
+                    expandedText = "Less settings",
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .align(Alignment.CenterHorizontally),
+                )
+
+                if (expanded) {
+                    TimePicker(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                    )
                 }
-            },
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
-
-        ExpendableButton(
-            expanded = expanded,
-            onClick = setExpanded,
-            color = Color(0x999999),
-            text = "More settings",
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
-
-        if (expanded) {
-            TimePicker(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            )
+            }
         }
 
-        Spacer(
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White,
             modifier = Modifier
-                .background(Color.Black)
-                .height(16.dp),
-        )
-
-        ColorPicker(
-            selected = color,
-            onClick = setColor,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
+                .padding(
+                    vertical = 8.dp,
+                )
+                .align(Alignment.CenterHorizontally),
+        ) {
+            ColorPicker(
+                selected = color,
+                onClick = setColor,
+                modifier = Modifier.padding(32.dp),
+            )
+        }
     }
 }
 
 @Composable
 @Preview
 private fun StickyDetailsPreview() {
-    Box(
-        Modifier
-            .padding(64.dp)
-            .background(Color.White)
-            .fillMaxSize()
-    ) {
-        StickyDetails()
+    Column() {
+        StickyDetails(
+            modifier = Modifier.padding(0.dp),
+        )
+
+        Spacer(
+            Modifier.height(16.dp),
+        )
+
+        Button(
+            onClick = {},
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .background(Color.White),
+        ) {
+            Text("Back to Home.")
+        }
     }
 }

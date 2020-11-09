@@ -7,10 +7,7 @@ import androidx.compose.animation.animate
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumnForIndexed
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -18,11 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -35,20 +29,22 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
+@OptIn(ExperimentalLayout::class)
 @Composable
 fun TimePicker(
     time: LocalTime = LocalTime.now(),
     fontSize: TextUnit = 40.sp,
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier.padding(32.dp)) {
+    Row(modifier
+    ) {
         val fontSizeInPx = with(DensityAmbient.current) { fontSize.toPx() }
         val hours = (0..23).distinct()
 
-        val hoursState = rememberLazyListState(initialFirstVisibleItemIndex = time.hour)
+        val hoursState = rememberLazyListState(initialFirstVisibleItemIndex = time.hour, initialFirstVisibleItemScrollOffset = 45)
 
         val minutes = (0..59).distinct()
-        val minutesState = rememberLazyListState(initialFirstVisibleItemIndex = time.minute)
+        val minutesState = rememberLazyListState(initialFirstVisibleItemIndex = time.minute, initialFirstVisibleItemScrollOffset = 45)
 
         val commonModifier = Modifier.padding(32.dp).align(alignment = Alignment.CenterVertically)
 
@@ -60,19 +56,35 @@ fun TimePicker(
             modifier = commonModifier,
         )
 
-        NumberPicker(
-            numbers = hours,
-            state = hoursState,
-            modifier = commonModifier,
-            fontSize = fontSize,
-        )
+        Box(
+            Modifier.preferredHeight(IntrinsicSize.Min)
+        ) {
+            Row() {
+                NumberPicker(
+                    numbers = hours,
+                    state = hoursState,
+                    modifier = commonModifier,
+                    fontSize = fontSize,
+                )
 
-        NumberPicker(
-            numbers = minutes,
-            state = minutesState,
-            modifier = commonModifier,
-            fontSize = fontSize,
-        )
+                NumberPicker(
+                    numbers = minutes,
+                    state = minutesState,
+                    modifier = commonModifier,
+                    fontSize = fontSize,
+                )
+            }
+            Box(
+                Modifier
+                    .background(
+                        VerticalGradient(
+                            listOf(Color.White, Color.Transparent, Color.White),
+                            0f,
+                            575f,
+                        )
+                    )
+            ) {}
+        }
     }
 }
 
@@ -84,7 +96,8 @@ fun NumberPicker(
     fontSize: TextUnit,
 ) {
     val beginningList = listOf(numbers[0], numbers[0])
-    val endList = listOf(numbers[numbers.size - 1], numbers[numbers.size - 1], numbers[numbers.size - 1])
+    val endList =
+        listOf(numbers[numbers.size - 1], numbers[numbers.size - 1], numbers[numbers.size - 1])
     val items = beginningList + numbers + endList
 
     val sizeInDp = with(DensityAmbient.current) { fontSize.toDp() }
@@ -228,7 +241,8 @@ fun Clock(
 private fun TimePickerPreview() {
     Row(Modifier.background(Color.White)) {
         TimePicker(
-            modifier = Modifier.align(alignment = Alignment.CenterVertically),
+            modifier = Modifier
+                .align(alignment = Alignment.CenterVertically),
         )
     }
 }

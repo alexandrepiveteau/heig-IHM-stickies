@@ -61,14 +61,7 @@ fun App() {
             Column() {
                 StickyDetails(
                     modifier = Modifier
-                        .width(1000.dp)
                         .background(Color.White),
-                )
-
-                Spacer(
-                    modifier = Modifier
-                        .background(Color.Black)
-                        .height(16.dp),
                 )
 
                 Button(

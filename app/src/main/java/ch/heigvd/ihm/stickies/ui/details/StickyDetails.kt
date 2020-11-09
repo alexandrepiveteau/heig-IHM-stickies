@@ -45,10 +45,15 @@ fun StickyDetails(
 
         if (expanded) {
             TimePicker(
-                time = LocalTime.of(23, 59),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
         }
+
+        Spacer(
+            modifier = Modifier
+                .background(Color.Black)
+                .height(16.dp),
+        )
 
         ColorPicker(
             selected = color,

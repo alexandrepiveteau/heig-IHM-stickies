@@ -54,8 +54,8 @@ fun EditCategoryInfoDialog(
         colors = lightColors(primary = Color.StickiesSuperGraddyStart)
     ) {
         Dialog(onDismissRequest = onCancel) {
-            val (newText, setNewText) = remember { mutableStateOf(title) }
-            val (newIcon, setNewIcon) = remember { mutableStateOf(icon) }
+            val (newText, setNewText) = remember(title) { mutableStateOf(title) }
+            val (newIcon, setNewIcon) = remember(icon) { mutableStateOf(icon) }
 
             Surface(Modifier.preferredWidth(400.dp), shape = RoundedCornerShape(16.dp)) {
                 Column(Modifier.padding(16.dp)) {

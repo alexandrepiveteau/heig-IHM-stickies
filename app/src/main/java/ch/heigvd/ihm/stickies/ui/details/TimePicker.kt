@@ -38,8 +38,8 @@ import kotlin.math.sin
 @Composable
 fun TimePicker(
     time: LocalTime = LocalTime.now(),
-    modifier: Modifier = Modifier,
     fontSize: TextUnit = 40.sp,
+    modifier: Modifier = Modifier,
 ) {
     Row(modifier.padding(32.dp)) {
         val fontSizeInPx = with(DensityAmbient.current) { fontSize.toPx() }
@@ -83,8 +83,9 @@ fun NumberPicker(
     modifier: Modifier = Modifier,
     fontSize: TextUnit,
 ) {
-    val nanList = listOf(-1, -1)
-    val items = nanList + numbers + nanList
+    val beginningList = listOf(numbers[0], numbers[0])
+    val endList = listOf(numbers[numbers.size - 1], numbers[numbers.size - 1], numbers[numbers.size - 1])
+    val items = beginningList + numbers + endList
 
     val sizeInDp = with(DensityAmbient.current) { fontSize.toDp() }
 
@@ -94,7 +95,7 @@ fun NumberPicker(
         modifier = modifier.height(sizeInDp.times(6.7f)),
         state = state,
     ) { index, item ->
-        if (index == 0 || index == 1 || index == items.size - 2 || index == items.size - 1) {
+        if (index == 0 || index == 1 || index == items.size - 3 || index == items.size - 2 || index == items.size - 1) {
             Text("  ", fontSize = fontSize)
         } else {
             Text("%02d".format(item), fontSize = fontSize, fontWeight = FontWeight.Bold)

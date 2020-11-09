@@ -36,8 +36,7 @@ fun TimePicker(
     fontSize: TextUnit = 40.sp,
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier
-    ) {
+    Row(modifier) {
         val fontSizeInPx = with(DensityAmbient.current) { fontSize.toPx() }
         val hours = (0..23).distinct()
 
@@ -182,10 +181,10 @@ fun Clock(
             paint.color = Color(0xFF262626).toArgb()
 
             for (x in 1 until 13) {
-                var rect = Rect()
+                val rect = Rect()
                 paint.getTextBounds(x.toString(), 0, x.toString().length, rect)
                 canvas.nativeCanvas.drawText(
-                    "${x}",
+                    "$x",
                     offset.x + numbersPosMult * clockRadius * cos(hTruncatedAngle(x)) - rect.right / 2f,
                     offset.y + numbersPosMult * clockRadius * sin(hTruncatedAngle(x)) - rect.top / 2f,
                     paint,

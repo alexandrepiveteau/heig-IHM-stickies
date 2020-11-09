@@ -33,7 +33,6 @@ fun StickyDetails(
                     vertical = 8.dp,
                 )
                 .align(Alignment.CenterHorizontally),
-
         ) {
             Column(
                 Modifier
@@ -53,9 +52,9 @@ fun StickyDetails(
                         .align(Alignment.CenterHorizontally),
                 )
 
-                ExpendableButton(
+                ExpandableButton(
                     expanded = expanded,
-                    onClick = setExpanded,
+                    onClick = { setExpanded(!expanded) },
                     color = Color(0x999999),
                     contractedText = "More settings",
                     expandedText = "Less settings",
@@ -94,7 +93,7 @@ fun StickyDetails(
 @Composable
 @Preview
 private fun StickyDetailsPreview() {
-    Column() {
+    Column {
         StickyDetails(
             modifier = Modifier.padding(0.dp),
         )

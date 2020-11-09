@@ -12,7 +12,7 @@ fun Overlay(
     content: @Composable () -> Unit,
 ) {
     Surface(
-        color = Color(0xAA000000),
+        color = Color.Black.copy(alpha = 2 / 3f),
         modifier = modifier.fillMaxSize(),
     ) {
         content()

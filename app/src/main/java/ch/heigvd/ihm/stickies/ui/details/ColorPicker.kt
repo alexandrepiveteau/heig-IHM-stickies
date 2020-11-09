@@ -55,7 +55,7 @@ fun ColorPicker(
 @Composable
 @Preview
 private fun ColorPickerPreview() {
-    Stack(Modifier.background(Color.White).padding(16.dp)) {
+    Box(Modifier.background(Color.White).padding(16.dp)) {
         val (color, setColor) = remember { mutableStateOf(SelectionColor.Pink) }
         ColorPicker(selected = color, onClick = setColor, Modifier.align(Alignment.Center))
     }

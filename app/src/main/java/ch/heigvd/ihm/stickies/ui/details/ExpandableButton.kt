@@ -18,9 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
 
 @Composable
-fun ExpendableButton(
+fun ExpandableButton(
     expanded: Boolean,
-    onClick: (Boolean) -> Unit,
+    onClick: () -> Unit,
     color: Color,
     expandedText: String,
     contractedText: String,
@@ -31,25 +31,27 @@ fun ExpendableButton(
         modifier
             .background(background, CircleShape)
             .border(2.dp, color.copy(alpha = 0.4f), CircleShape)
-            .clickable(onClick = { onClick(!expanded) }, indication = null)
+            .clickable(onClick = onClick, indication = null)
             .padding(8.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Providers(AmbientContentColor provides contentColorFor(color)) {
-            Text(text = if (expanded) expandedText else contractedText, style = MaterialTheme.typography.subtitle1, modifier = Modifier.padding(4.dp))
+            Text(text = if (expanded) expandedText else contractedText,
+                style = MaterialTheme.typography.subtitle1,
+                modifier = Modifier.padding(4.dp))
         }
     }
 }
 
 @Composable
 @Preview
-private fun ExpendableButtonPreview() {
+private fun ExpandableButtonPreview() {
     Column(Modifier.background(Color.White).padding(16.dp)) {
         val (expanded, setExpanded) = remember { mutableStateOf(false) }
-        ExpendableButton(
+        ExpandableButton(
             expanded = expanded,
-            onClick = setExpanded,
+            onClick = { setExpanded(!expanded) },
             color = Color(0x999999),
             contractedText = "More settings",
             expandedText = "Less settings",

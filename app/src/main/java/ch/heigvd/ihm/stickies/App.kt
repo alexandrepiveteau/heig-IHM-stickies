@@ -1,6 +1,6 @@
 package ch.heigvd.ihm.stickies
 
-import androidx.compose.animation.animate
+import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring.DampingRatioLowBouncy
 import androidx.compose.animation.core.Spring.StiffnessLow
 import androidx.compose.animation.core.spring
@@ -20,12 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import ch.heigvd.ihm.stickies.ui.Archivo
-import ch.heigvd.ihm.stickies.ui.Model
-import ch.heigvd.ihm.stickies.ui.StickiesFakeWhite
-import ch.heigvd.ihm.stickies.ui.demo
+import ch.heigvd.ihm.stickies.ui.*
 import ch.heigvd.ihm.stickies.ui.details.TimePicker
 import ch.heigvd.ihm.stickies.ui.freeform.Pane
+import ch.heigvd.ihm.stickies.ui.freeform.UndoButton
 import ch.heigvd.ihm.stickies.ui.material.GradientButton
 import dev.chrisbanes.compose.navigationBarsPadding
 
@@ -33,9 +31,11 @@ import dev.chrisbanes.compose.navigationBarsPadding
  * A composable that acts as the main entry point of the application. This is where state should be
  * managed, and top-level navigation between the different destinations should take place.
  */
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun App() {
     // Global application state.
+    val undos = remember { mutableStateOf(Undos()) }
     val state = remember { mutableStateOf(Model.demo()) }
     var adding by remember { mutableStateOf(false) }
 
@@ -44,6 +44,7 @@ fun App() {
         Box(Modifier.padding(bottom = 16.dp)) {
             Pane(
                 state = state,
+                undos = undos,
                 Modifier
                     .background(Color.StickiesFakeWhite)
                     .navigationBarsPadding()
@@ -59,6 +60,22 @@ fun App() {
                 .padding(bottom = 16.dp)
                 .offset(x = offset),
         )
+        AnimatedVisibility(
+            visible = undos.value.isNotEmpty,
+            modifier = Modifier.align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = 16.dp),
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            UndoButton(
+                onClick = {
+                    val (newModel, newUndos) = undos.value.applyAll(state.value)
+                    undos.value = newUndos
+                    state.value = newModel
+                }
+            )
+        }
     }
 
     // Display a dialog if we're currently adding a new sticky.

@@ -29,7 +29,6 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-@OptIn(ExperimentalLayout::class)
 @Composable
 fun TimePicker(
     time: LocalTime = LocalTime.now(),
@@ -57,7 +56,14 @@ fun TimePicker(
         )
 
         Box(
-            Modifier.preferredHeight(IntrinsicSize.Min)
+            Modifier
+            .background(
+                VerticalGradient(
+                    listOf(Color.Black, Color.Transparent, Color.Black),
+                    0f,
+                    575f,
+                )
+            )
         ) {
             Row() {
                 NumberPicker(
@@ -74,16 +80,6 @@ fun TimePicker(
                     fontSize = fontSize,
                 )
             }
-            Box(
-                Modifier
-                    .background(
-                        VerticalGradient(
-                            listOf(Color.White, Color.Transparent, Color.White),
-                            0f,
-                            575f,
-                        )
-                    )
-            ) {}
         }
     }
 }

@@ -1,5 +1,9 @@
 package ch.heigvd.ihm.stickies
 
+import androidx.compose.animation.animate
+import androidx.compose.animation.core.Spring.DampingRatioLowBouncy
+import androidx.compose.animation.core.Spring.StiffnessLow
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -46,11 +50,14 @@ fun App() {
                     .fillMaxSize()
             )
         }
+        val offset = animate(if (state.value.categoryOpen) 512.dp else 0.dp,
+            spring(stiffness = StiffnessLow, dampingRatio = DampingRatioLowBouncy))
         NewStickyButton(
             onClick = { adding = true },
             modifier = Modifier.align(Alignment.BottomCenter)
                 .navigationBarsPadding()
-                .padding(bottom = 16.dp),
+                .padding(bottom = 16.dp)
+                .offset(x = offset),
         )
     }
 

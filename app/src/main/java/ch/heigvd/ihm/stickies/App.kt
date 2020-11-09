@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ch.heigvd.ihm.stickies.ui.*
 import ch.heigvd.ihm.stickies.ui.details.NewSticky
-import ch.heigvd.ihm.stickies.ui.details.Overlay
+import ch.heigvd.ihm.stickies.ui.details.overlay
 import ch.heigvd.ihm.stickies.ui.freeform.Pane
 import ch.heigvd.ihm.stickies.ui.freeform.UndoButton
 import ch.heigvd.ihm.stickies.ui.material.GradientButton
@@ -79,15 +79,14 @@ fun App() {
 
     // Display a dialog if we're currently adding a new sticky.
     if (adding) {
-        Overlay {
-            NewSticky(
-                onCancel = { adding = false },
-                onNewSticky = { title, color ->
-                    state.value = state.value.stickyAdd(title, color, false, 0)
-                    adding = false
-                },
-            )
-        }
+        NewSticky(
+            onCancel = { adding = false },
+            onNewSticky = { title, color ->
+                state.value = state.value.stickyAdd(title, color, false, 0)
+                adding = false
+            },
+            modifier = Modifier.overlay()
+        )
     }
 }
 

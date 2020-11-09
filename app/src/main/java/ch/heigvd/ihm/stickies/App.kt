@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ch.heigvd.ihm.stickies.ui.*
 import ch.heigvd.ihm.stickies.ui.details.NewSticky
-import ch.heigvd.ihm.stickies.ui.details.overlay
+import ch.heigvd.ihm.stickies.ui.modifier.overlay
 import ch.heigvd.ihm.stickies.ui.freeform.Pane
 import ch.heigvd.ihm.stickies.ui.freeform.UndoButton
 import ch.heigvd.ihm.stickies.ui.material.GradientButton

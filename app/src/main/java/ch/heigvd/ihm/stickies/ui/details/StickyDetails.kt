@@ -14,42 +14,71 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun StickyDetails(
     color: Color,
+    text: String,
     onColorChange: (Color) -> Unit,
+    onTextChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    actions: @Composable RowScope.() -> Unit,
 ) {
     val (dates, setDates) = remember { mutableStateOf(emptySet<SelectionDate>()) }
     val (expanded, setExpanded) = remember { mutableStateOf(false) }
 
-    Column(modifier) {
-        Portion(title = "ADD A REMINDER") {
-            DatePicker(
-                selected = dates,
-                onClick = { date ->
-                    if (dates.contains(date)) {
-                        setDates(dates - date)
-                    } else {
-                        setDates(dates + date)
-                    }
-                },
-            )
-            AnimatedVisibility(expanded,
-                enter = fadeIn() + expandVertically(Alignment.CenterVertically),
-                exit = fadeOut() + shrinkVertically(Alignment.CenterVertically),
-            ) {
+    Row(
+        modifier,
+        Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+        Alignment.CenterVertically,
+    ) {
+        Column(Modifier, Arrangement.spacedBy(16.dp)) {
+            Portion(title = "ADD A REMINDER") {
+                DatePicker(
+                    selected = dates,
+                    onClick = { date ->
+                        if (dates.contains(date)) {
+                            setDates(dates - date)
+                        } else {
+                            setDates(dates + date)
+                        }
+                    },
+                    selectionColor = color,
+                )
+                AnimatedVisibility(
+                    expanded,
+                    enter = fadeIn() + expandVertically(Alignment.CenterVertically),
+                    exit = fadeOut() + shrinkVertically(Alignment.CenterVertically),
+                ) {
+                    Spacer(Modifier.height(16.dp))
+                    TimePicker(
+                        initialHour = 9,
+                        initialMinute = 0,
+                        onHour = {},
+                        onMinute = {},
+                    )
+                }
                 Spacer(Modifier.height(16.dp))
-                TimePicker()
+                ExpandButton(
+                    expanded = expanded,
+                    onClick = { setExpanded(!expanded) },
+                )
             }
-            Spacer(Modifier.height(16.dp))
-            ExpandButton(
-                expanded = expanded,
-                onClick = { setExpanded(!expanded) },
-            )
+            // This size is known to be 76 * 7 + 16 * 8, aka the width of the CircularPill composable
+            // plus the spacers of the Portion composable.
+            Portion("CHOOSE A COLOR", Modifier.preferredWidth(660.dp)) {
+                ColorPicker(selected = color, onClick = onColorChange)
+            }
+            Row(
+                Modifier.preferredWidth(660.dp),
+                Arrangement.spacedBy(64.dp, Alignment.CenterHorizontally),
+            ) {
+                actions()
+            }
         }
-        Spacer(Modifier.height(16.dp))
-        // This size is known to be 76 * 7 + 16 * 8, aka the width of the CircularPill composable
-        // plus the spacers of the Portion composable.
-        Portion("CHOOSE A COLOR", Modifier.preferredWidth(660.dp)) {
-            ColorPicker(selected = color, onClick = onColorChange)
-        }
+        EditSticky(
+            text = text,
+            onTextChange = onTextChange,
+            color = color,
+            Modifier
+                .padding(bottom = 64.dp + 16.dp)
+                .size(376.dp)
+        )
     }
 }

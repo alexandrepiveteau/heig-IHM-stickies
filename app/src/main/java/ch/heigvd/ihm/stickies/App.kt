@@ -4,26 +4,23 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring.DampingRatioLowBouncy
 import androidx.compose.animation.core.Spring.StiffnessLow
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.Icon
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.drawLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import ch.heigvd.ihm.stickies.ui.*
 import ch.heigvd.ihm.stickies.ui.details.NewSticky
-import ch.heigvd.ihm.stickies.ui.modifier.overlay
 import ch.heigvd.ihm.stickies.ui.freeform.Pane
 import ch.heigvd.ihm.stickies.ui.freeform.UndoButton
-import ch.heigvd.ihm.stickies.ui.material.GradientButton
+import ch.heigvd.ihm.stickies.ui.material.BigGradientButton
+import ch.heigvd.ihm.stickies.ui.modifier.overlay
 import dev.chrisbanes.compose.navigationBarsPadding
 
 /**
@@ -90,30 +87,17 @@ fun App() {
     }
 }
 
-private val NewStickyButtonTextStyle = TextStyle(
-    fontFamily = Archivo,
-    fontWeight = FontWeight.Bold,
-    fontSize = 20.sp,
-)
-
 @Composable
 private fun NewStickyButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    GradientButton(
+    BigGradientButton(
         onClick = onClick,
-        borderSize = 4.dp,
-        modifier = modifier.height(64.dp),
-    ) {
-        Spacer(Modifier.width(16.dp))
-        // TODO : Fix this icon scaling.
-        Icon(
-            vectorResource(R.drawable.ic_action_plus),
-            Modifier.drawLayer(scaleX = 1.25f, scaleY = 1.25f)
-        )
-        Spacer(Modifier.width(16.dp))
-        Text("New Sticky", style = NewStickyButtonTextStyle)
-        Spacer(Modifier.width(16.dp))
-    }
+        icon = vectorResource(R.drawable.ic_action_plus),
+        title = "New Sticky",
+        from = Color.StickiesSuperGraddyStart,
+        to = Color.StickiesSuperGraddyEnd,
+        modifier = modifier,
+    )
 }

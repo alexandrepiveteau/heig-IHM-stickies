@@ -2,11 +2,8 @@ package ch.heigvd.ihm.stickies.ui.material
 
 import androidx.compose.animation.ColorPropKey
 import androidx.compose.animation.animate
+import androidx.compose.animation.core.*
 import androidx.compose.animation.core.AnimationConstants.Infinite
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.repeatable
-import androidx.compose.animation.core.transitionDefinition
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.transition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Text
@@ -29,9 +26,6 @@ import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ch.heigvd.ihm.stickies.ui.StickiesSuperGraddyEnd
-import ch.heigvd.ihm.stickies.ui.StickiesSuperGraddyStart
-import java.util.*
 
 private val FirstColor = ColorPropKey()
 private val SecondColor = ColorPropKey()
@@ -43,18 +37,18 @@ private enum class State {
     End,
 }
 
-private val Transition = transitionDefinition<State> {
+private fun gradient(from: Color, to: Color): TransitionDefinition<State> = transitionDefinition {
     state(State.Start) {
-        this[FirstColor] = Color.StickiesSuperGraddyStart
-        this[SecondColor] = Color.StickiesSuperGraddyEnd
-        this[ThirdColor] = Color.StickiesSuperGraddyEnd
-        this[FourthColor] = Color.StickiesSuperGraddyStart
+        this[FirstColor] = from
+        this[SecondColor] = to
+        this[ThirdColor] = to
+        this[FourthColor] = from
     }
     state(State.End) {
-        this[FirstColor] = Color.StickiesSuperGraddyEnd
-        this[SecondColor] = Color.StickiesSuperGraddyStart
-        this[ThirdColor] = Color.StickiesSuperGraddyStart
-        this[FourthColor] = Color.StickiesSuperGraddyEnd
+        this[FirstColor] = to
+        this[SecondColor] = from
+        this[ThirdColor] = from
+        this[FourthColor] = to
     }
     transition {
         FirstColor using repeatable(
@@ -85,6 +79,8 @@ private val Transition = transitionDefinition<State> {
  * color scheme is Smurf- and Flamingo-based.
  *
  * @param onClick the callback called when the button is clicked.
+ * @param from the color that we start the gradient with.
+ * @param to the color that we end the gradient with.
  * @param modifier the modifier for the button.
  * @param borderSize the width of the gradient border.
  * @param content the inner contents of the button.
@@ -92,6 +88,7 @@ private val Transition = transitionDefinition<State> {
 @Composable
 fun GradientButton(
     onClick: () -> Unit,
+    from: Color, to: Color,
     modifier: Modifier = Modifier,
     borderSize: Dp = 2.dp,
     content: @Composable RowScope.() -> Unit,
@@ -100,7 +97,7 @@ fun GradientButton(
     val end = with(DensityAmbient.current) { 300.dp.toPx() }
     var bounds by remember { mutableStateOf(Rect(Offset(0f, 0f), Size(end, end / 2))) }
     val values = transition(
-        definition = Transition, initState = State.Start,
+        definition = remember { gradient(from, to) }, initState = State.Start,
         toState = State.End
     )
     val brush = LinearGradient(
@@ -133,26 +130,29 @@ fun GradientButton(
 }
 
 /**
- * An alternative to [Button] that uses an animated gradient on its inner border. The gradient
- * color scheme is Smurf- and Flamingo-based.
+ * An alternative to [Button] that uses an animated gradient on its inner border.
  *
  * @param value the string inside the button
  * @param onClick the callback called when the button is clicked.
+ * @param from the color that we start the gradient with.
+ * @param to the color that we end the gradient with.
  * @param modifier the modifier for the button.
  */
 @Composable
 fun GradientButton(
     value: String,
+    from: Color, to: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     GradientButton(
         onClick = onClick,
+        from = from, to = to,
         modifier = modifier
             .preferredHeight(56.dp),
     ) {
         Text(
-            text = (value).toUpperCase(Locale.ROOT),
+            text = value,
             fontSize = 14.sp
         )
     }

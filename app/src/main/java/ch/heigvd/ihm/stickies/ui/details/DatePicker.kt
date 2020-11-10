@@ -1,5 +1,6 @@
 package ch.heigvd.ihm.stickies.ui.details
 
+import androidx.compose.animation.animate
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
+import ch.heigvd.ihm.stickies.ui.StickiesGreen
 
 enum class SelectionDate(val title: String) {
     Monday("Mon"),
@@ -31,26 +33,27 @@ enum class SelectionDate(val title: String) {
 fun DatePicker(
     selected: Set<SelectionDate>,
     onClick: (SelectionDate) -> Unit,
+    selectionColor: Color,
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier) {
-        for ((index, day) in SelectionDate.values().withIndex()) {
+    val defaultColor = Color(0xFFF2F2F2)
+    Row(modifier, Arrangement.spacedBy(16.dp)) {
+        for (day in SelectionDate.values()) {
+            val filled = selected.contains(day)
             CircularPill(
-                color = Color(0xFFF2F2F2),
-                Modifier
+                color = animate(if (filled) selectionColor else defaultColor),
+                modifier = Modifier
                     .clip(CircleShape)
                     .clickable(
                         onClick = { onClick(day) },
                         indication = RippleIndication(),
                     ),
-                filled = selected.contains(day),
+                filled = filled,
                 content = {
                     Text(day.title, style = MaterialTheme.typography.subtitle1)
                     Text("02", style = MaterialTheme.typography.subtitle2)
-                })
-            if (index != SelectionDate.values().size - 1) {
-                Spacer(Modifier.width(16.dp))
-            }
+                }
+            )
         }
     }
 }
@@ -69,6 +72,7 @@ private fun DatePickerPreview() {
                     setDates(dates + date)
                 }
             },
+            selectionColor = Color.StickiesGreen,
             Modifier.align(Alignment.Center)
         )
     }

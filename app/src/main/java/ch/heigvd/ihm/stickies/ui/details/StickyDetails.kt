@@ -39,6 +39,7 @@ fun StickyDetails(
                             setDates(dates + date)
                         }
                     },
+                    selectionColor = color,
                 )
                 AnimatedVisibility(
                     expanded,

@@ -12,6 +12,6 @@ import androidx.compose.ui.graphics.Color
  * @param onDismiss a callback called when the overlay is clicked.
  */
 fun Modifier.overlay(onDismiss: () -> Unit = {}) =
-    this.then(background(Color.Black.copy(alpha = 2 / 3f)))
+    this.then(tapGestureFilter { onDismiss() })
+        .then(background(Color.Black.copy(alpha = 2 / 3f)))
         .then(fillMaxSize())
-        .then(tapGestureFilter { onDismiss() })

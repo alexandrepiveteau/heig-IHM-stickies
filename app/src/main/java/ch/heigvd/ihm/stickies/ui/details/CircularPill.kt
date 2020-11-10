@@ -14,6 +14,7 @@ import androidx.compose.runtime.Providers
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
 
@@ -24,9 +25,12 @@ fun CircularPill(
     filled: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val backgroundAlpha = animate(if (filled) 1f else 0.1f)
-    val border = animate(color)
-    val background = color.copy(alpha = backgroundAlpha)
+    val border = animate(color
+        .copy(alpha = 0.4f)
+        .compositeOver(Color.Black.copy(alpha = 0.2f)))
+    val background = color
+        .copy(alpha = animate(if (filled) 0.8f else 0.0f))
+        .compositeOver(Color.Black.copy(alpha = animate(if (filled) 0.2f else 0f)))
     Column(
         modifier
             .preferredSize(76.dp)

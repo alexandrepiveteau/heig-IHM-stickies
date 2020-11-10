@@ -44,6 +44,8 @@ operator fun SelectionDay.minus(other: SelectionDay): Int {
 fun DayPicker(
     selected: SelectionDay?,
     today: SelectionDay,
+    dayOfMonth: Int,
+    daysInMonths: Int,
     onClick: (SelectionDay) -> Unit,
     selectionColor: Color,
     modifier: Modifier = Modifier,
@@ -54,8 +56,10 @@ fun DayPicker(
         .drop(SelectionDay.values().indexOf(today))
         .take(SelectionDay.values().size)
     Row(modifier, Arrangement.spacedBy(16.dp)) {
+        var numericDay = dayOfMonth
         for (day in displayed) {
             val filled = selected == day
+            val number = numericDay++
             CircularPill(
                 color = animate(if (filled) selectionColor else defaultColor),
                 modifier = Modifier
@@ -67,7 +71,7 @@ fun DayPicker(
                 filled = filled,
                 content = {
                     Text(day.title, style = MaterialTheme.typography.subtitle1)
-                    Text("02", style = MaterialTheme.typography.subtitle2)
+                    Text("${number % daysInMonths}", style = MaterialTheme.typography.subtitle2)
                 }
             )
         }
@@ -90,7 +94,9 @@ private fun DatePickerPreview() {
                 }
             },
             selectionColor = Color.StickiesGreen,
-            Modifier.align(Alignment.Center)
+            dayOfMonth = 28,
+            daysInMonths = 30,
+            modifier = Modifier.align(Alignment.Center)
         )
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.Year
 import java.time.ZoneId
 
 private fun DayOfWeek.asSelectionDay(): SelectionDay = when (this) {
@@ -43,6 +44,19 @@ private fun day(timestamp: Long): SelectionDay {
         .asSelectionDay()
 }
 
+private fun dayOfMonth(timestamp: Long): Int {
+    return Instant.ofEpochMilli(timestamp)
+        .atZone(ZoneId.systemDefault())
+        .dayOfMonth
+}
+
+private fun daysInMonth(timestamp: Long): Int {
+    val dateTime = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault())
+    return dateTime
+        .month
+        .length(Year.isLeap(dateTime.year.toLong()))
+}
+
 private fun asTimestamp(
     today: SelectionDay,
     hour: Int,
@@ -72,7 +86,7 @@ fun StickyDetails(
     modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit,
 ) {
-    val today = remember { day(System.currentTimeMillis()) }
+    val now = remember { System.currentTimeMillis() }
     val (hour, setHour) = remember { mutableStateOf(alert?.let(::hour) ?: 9) }
     val (minute, setMinute) = remember { mutableStateOf(alert?.let(::minute) ?: 0) }
     val (day, setDay) = remember { mutableStateOf(alert?.let(::day)) }
@@ -88,7 +102,7 @@ fun StickyDetails(
                 DayPicker(
                     selected = day,
                     onClick = { date ->
-                        onAlertChange(asTimestamp(today, hour, minute, day))
+                        onAlertChange(asTimestamp(day(now), hour, minute, day))
                         if (day == date) {
                             // Callback.
                             setDay(null)
@@ -98,7 +112,9 @@ fun StickyDetails(
                         }
                     },
                     selectionColor = color,
-                    today = today,
+                    today = day(now),
+                    dayOfMonth = dayOfMonth(now),
+                    daysInMonths = daysInMonth(now),
                 )
                 AnimatedVisibility(
                     expanded,
@@ -110,11 +126,11 @@ fun StickyDetails(
                         initialHour = hour,
                         initialMinute = minute,
                         onHour = {
-                            onAlertChange(asTimestamp(today, hour, minute, day))
+                            onAlertChange(asTimestamp(day(now), hour, minute, day))
                             setHour(it)
                         },
                         onMinute = {
-                            onAlertChange(asTimestamp(today, hour, minute, day))
+                            onAlertChange(asTimestamp(day(now), hour, minute, day))
                             setMinute(it)
                         },
                     )

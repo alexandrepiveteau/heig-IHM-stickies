@@ -20,6 +20,8 @@ import ch.heigvd.ihm.stickies.ui.details.EditStickyOverlay
 import ch.heigvd.ihm.stickies.ui.details.NewSticky
 import ch.heigvd.ihm.stickies.ui.freeform.Pane
 import ch.heigvd.ihm.stickies.ui.freeform.UndoButton
+import ch.heigvd.ihm.stickies.ui.help.HelpIcon
+import ch.heigvd.ihm.stickies.ui.help.HelpOverlay
 import ch.heigvd.ihm.stickies.ui.material.BigGradientButton
 import ch.heigvd.ihm.stickies.ui.modifier.overlay
 import dev.chrisbanes.compose.navigationBarsPadding
@@ -36,6 +38,7 @@ fun App() {
     val state = remember { mutableStateOf(Model.demo()) }
     var adding by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<StickyIdentifier?>(null) }
+    var helping by remember { mutableStateOf(false) }
 
     // Actual screens of the application.
     Box(Modifier, Alignment.Center) {
@@ -48,6 +51,17 @@ fun App() {
                     .background(Color.StickiesFakeWhite)
                     .navigationBarsPadding()
                     .fillMaxSize()
+            )
+        }
+        AnimatedVisibility(
+            !state.value.categoryOpen,
+            Modifier
+                .align(Alignment.BottomEnd)
+                .navigationBarsPadding()
+                .padding(16.dp),
+        ) {
+            HelpIcon(
+                onClick = { helping = true },
             )
         }
         val offset = animate(if (state.value.categoryOpen) 512.dp else 0.dp,
@@ -102,6 +116,16 @@ fun App() {
                 modifier = Modifier.overlay(),
             )
         }
+    }
+
+    // Display a help page as needed.
+    if (helping) {
+        HelpOverlay(
+            onCancel = { helping = false },
+            modifier = Modifier
+                .fillMaxSize()
+                .overlay(onDismiss = { helping = false }),
+        )
     }
 }
 

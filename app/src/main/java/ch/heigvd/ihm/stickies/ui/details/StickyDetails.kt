@@ -46,7 +46,12 @@ fun StickyDetails(
                     exit = fadeOut() + shrinkVertically(Alignment.CenterVertically),
                 ) {
                     Spacer(Modifier.height(16.dp))
-                    TimePicker()
+                    TimePicker(
+                        initialHour = 9,
+                        initialMinute = 0,
+                        onHour = {},
+                        onMinute = {},
+                    )
                 }
                 Spacer(Modifier.height(16.dp))
                 ExpandButton(

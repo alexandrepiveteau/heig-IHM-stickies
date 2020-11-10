@@ -42,19 +42,19 @@ fun Model.Companion.demo(): Model = Model(
     .stickyAdd("Buy potato", Color.StickiesOrange, null, 1)
     .stickyAdd("Birthday present for Andres", Color.StickiesPink, null, 1)
     .stickyAdd("6 hamburgers\n\n- Buns\n- Steaks\n- Tomatoes", Color.StickiesBlue, null, 1)
-    .stickyAdd("Buy some bread\n\n- Whole grain\n- Without raisins", Color.StickiesYellow, null, 1)
+    .stickyAdd("Buy some bread\n- Whole grain\n- Without raisins", Color.StickiesYellow, System.currentTimeMillis() + 30 * 1000, 1)
     // Medical stuff.
-    .stickyAdd("Take all my pills for the day :\n\n- Aspirin\n- Lotensin",
+    .stickyAdd("Take all my pills for the day :\n- Aspirin\n- Lotensin",
         Color.StickiesOrange,
         null,
         2)
     // Appointments.
     .stickyAdd("Netflix & Chill with Jeanette", Color.StickiesYellow, null, 3)
     .stickyAdd("IHM presentation", Color.StickiesBlue, null, 3)
-    .stickyAdd("Dentist at 10 am", Color.StickiesOrange, null, 3)
+    .stickyAdd("Dentist at 10 am", Color.StickiesOrange, System.currentTimeMillis() + 60 * 1000, 3)
     // Exercice.
     .stickyAdd("Walk around the block\n(use a face mask)", Color.StickiesGreen, null, 4)
     // Medor.
     .stickyAdd("Tell him he's a good boy", Color.StickiesOrange, null, 5)
     .stickyAdd("Buy a new bone", Color.StickiesBlue, null, 5)
-    .stickyAdd("Take Medor to the vet", Color.StickiesYellow, null, 5)
+    .stickyAdd("Take Medor to the vet", Color.StickiesYellow, System.currentTimeMillis() + 240 * 1000, 5)

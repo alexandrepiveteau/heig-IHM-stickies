@@ -29,16 +29,32 @@ enum class SelectionDay(val title: String) {
     Sunday("Sun");
 }
 
+operator fun SelectionDay.minus(other: SelectionDay): Int {
+    val firstIndex = SelectionDay.values().indexOf(this)
+    val secondIndex = SelectionDay.values().indexOf(other)
+    val delta = secondIndex - firstIndex
+    return if (delta < 0) {
+        delta + 7
+    } else {
+        delta
+    }
+}
+
 @Composable
 fun DayPicker(
     selected: SelectionDay?,
+    today: SelectionDay,
     onClick: (SelectionDay) -> Unit,
     selectionColor: Color,
     modifier: Modifier = Modifier,
 ) {
     val defaultColor = Color(0xFFF2F2F2)
+    val days = SelectionDay.values() + SelectionDay.values()
+    val displayed = days
+        .drop(SelectionDay.values().indexOf(today))
+        .take(SelectionDay.values().size)
     Row(modifier, Arrangement.spacedBy(16.dp)) {
-        for (day in SelectionDay.values()) {
+        for (day in displayed) {
             val filled = selected == day
             CircularPill(
                 color = animate(if (filled) selectionColor else defaultColor),
@@ -65,6 +81,7 @@ private fun DatePickerPreview() {
         val (day, setDay) = remember { mutableStateOf<SelectionDay?>(null) }
         DayPicker(
             selected = day,
+            today = SelectionDay.Wednesday,
             onClick = { date ->
                 if (date == day) {
                     setDay(null)

@@ -19,6 +19,13 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
+/**
+ * A composable that can display some minutes and seconds in an analog fashion.
+ *
+ * @param hours the current hours count.
+ * @param minutes the current minutes count.
+ * @param modifier the [Modifier] for this composable.
+ */
 @Composable
 fun Clock(
     hours: Int,
@@ -29,7 +36,7 @@ fun Clock(
     val mAngle = animate(mAngle(minutes))
 
     // Draw on the canvas
-    Canvas(modifier.preferredSize(200.dp)) {
+    Canvas(modifier.preferredSize(96.dp)) {
 
         val clockRadius = minOf(size.height, size.width) / 2f
 

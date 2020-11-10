@@ -1,8 +1,7 @@
 package ch.heigvd.ihm.stickies.ui.details
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -11,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun StickyDetails(
     color: Color,
@@ -21,68 +21,35 @@ fun StickyDetails(
     val (expanded, setExpanded) = remember { mutableStateOf(false) }
 
     Column(modifier) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = Color.White,
-            modifier = Modifier
-                .padding(
-                    horizontal = 32.dp,
-                    vertical = 8.dp,
-                )
-                .align(Alignment.CenterHorizontally),
-        ) {
-            Column(
-                Modifier
-                    .padding(32.dp)
-                    .width(90.dp.times(7))
-            ) {
-                DatePicker(
-                    selected = dates,
-                    onClick = { date ->
-                        if (dates.contains(date)) {
-                            setDates(dates - date)
-                        } else {
-                            setDates(dates + date)
-                        }
-                    },
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally),
-                )
-
-                ExpandableButton(
-                    expanded = expanded,
-                    onClick = { setExpanded(!expanded) },
-                    color = Color(0x999999),
-                    contractedText = "More settings",
-                    expandedText = "Less settings",
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .align(Alignment.CenterHorizontally),
-                )
-
-                if (expanded) {
-                    TimePicker(
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                    )
-                }
-            }
-        }
-
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = Color.White,
-            modifier = Modifier
-                .padding(
-                    horizontal = 32.dp,
-                    vertical = 8.dp,
-                )
-                .align(Alignment.CenterHorizontally),
-        ) {
-            ColorPicker(
-                selected = color,
-                onClick = onColorChange,
-                modifier = Modifier.padding(32.dp),
+        Portion(title = "ADD A REMINDER") {
+            DatePicker(
+                selected = dates,
+                onClick = { date ->
+                    if (dates.contains(date)) {
+                        setDates(dates - date)
+                    } else {
+                        setDates(dates + date)
+                    }
+                },
             )
+            AnimatedVisibility(expanded,
+                enter = fadeIn() + expandVertically(Alignment.CenterVertically),
+                exit = fadeOut() + shrinkVertically(Alignment.CenterVertically),
+            ) {
+                Spacer(Modifier.height(16.dp))
+                TimePicker()
+            }
+            Spacer(Modifier.height(16.dp))
+            ExpandButton(
+                expanded = expanded,
+                onClick = { setExpanded(!expanded) },
+            )
+        }
+        Spacer(Modifier.height(16.dp))
+        // This size is known to be 76 * 7 + 16 * 8, aka the width of the CircularPill composable
+        // plus the spacers of the Portion composable.
+        Portion("CHOOSE A COLOR", Modifier.preferredWidth(660.dp)) {
+            ColorPicker(selected = color, onClick = onColorChange)
         }
     }
 }

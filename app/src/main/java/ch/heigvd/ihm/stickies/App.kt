@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import ch.heigvd.ihm.stickies.ui.*
+import ch.heigvd.ihm.stickies.ui.details.EditStickyOverlay
 import ch.heigvd.ihm.stickies.ui.details.NewSticky
 import ch.heigvd.ihm.stickies.ui.freeform.Pane
 import ch.heigvd.ihm.stickies.ui.freeform.UndoButton
@@ -34,6 +35,7 @@ fun App() {
     val undos = remember { mutableStateOf(Undos()) }
     val state = remember { mutableStateOf(Model.demo()) }
     var adding by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf<StickyIdentifier?>(null) }
 
     // Actual screens of the application.
     Box(Modifier, Alignment.Center) {
@@ -41,6 +43,7 @@ fun App() {
             Pane(
                 state = state,
                 undos = undos,
+                onClick = { editing = it },
                 Modifier
                     .background(Color.StickiesFakeWhite)
                     .navigationBarsPadding()
@@ -82,8 +85,23 @@ fun App() {
                 state.value = state.value.stickyAdd(title, color, false, 0)
                 adding = false
             },
-            modifier = Modifier.overlay()
+            modifier = Modifier.overlay(),
         )
+    }
+
+    // Display a dialog if we're currently editing a new sticky.
+    editing?.let { id ->
+        state.value.stickies[id]?.let { sticky ->
+            EditStickyOverlay(
+                sticky = sticky,
+                onCancel = { editing = null },
+                onSave = { title, color ->
+                    state.value = state.value.stickyUpdate(id, title, color)
+                    editing = null
+                },
+                modifier = Modifier.overlay(),
+            )
+        }
     }
 }
 

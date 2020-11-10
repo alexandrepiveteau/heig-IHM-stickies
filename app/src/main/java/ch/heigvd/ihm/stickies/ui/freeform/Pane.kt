@@ -49,12 +49,14 @@ typealias Timestamp = Long
  *
  * @param state the [MutableState] that contains all of the information related to the app.
  * @param undos the [MutableState] that contains all the information related to the undos.
+ * @param onClick a listener when the sticky is clicked and should be opened.
  * @param modifier the [Modifier] that this pane is based on.
  */
 @Composable
 fun Pane(
     state: MutableState<Model>,
     undos: MutableState<Undos>,
+    onClick: (StickyIdentifier) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var model by state
@@ -230,8 +232,7 @@ fun Pane(
                     pileSize = pileSize[sticky.category],
                     onClick = {
                         if (isSelfOpen) {
-                            detailScroll = NoScroll()
-                            model = model.categoryClose()
+                            onClick(sticky.identifier)
                         } else {
                             detailScroll = NoScroll()
                             model = model.categoryOpen(sticky.category)

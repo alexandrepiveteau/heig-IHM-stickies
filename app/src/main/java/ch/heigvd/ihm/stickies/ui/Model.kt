@@ -182,6 +182,18 @@ data class Model(
         )
     }
 
+    fun stickyUpdate(
+        identifier: StickyIdentifier,
+        title: String,
+        color: Color,
+    ) : Model {
+        val sticky = stickies[identifier]?.copy(title = title, color = color)
+        val updated = sticky?.let { this.stickies.put(identifier, it) } ?: this.stickies
+        return this.copy(
+            stickies = updated
+        )
+    }
+
     /**
      * Removes a sticky with a certain identifier. This can not be cancelled.
      *

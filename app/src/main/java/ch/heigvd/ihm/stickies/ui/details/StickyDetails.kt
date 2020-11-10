@@ -46,7 +46,9 @@ fun StickyDetails(
             )
         }
         Spacer(Modifier.height(16.dp))
-        Portion("CHOOSE A COLOR") {
+        // This size is known to be 76 * 7 + 16 * 8, aka the width of the CircularPill composable
+        // plus the spacers of the Portion composable.
+        Portion("CHOOSE A COLOR", Modifier.preferredWidth(660.dp)) {
             ColorPicker(selected = color, onClick = onColorChange)
         }
     }

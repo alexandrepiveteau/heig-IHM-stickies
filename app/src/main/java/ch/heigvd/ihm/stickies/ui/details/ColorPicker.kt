@@ -10,7 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachIndexed
 import androidx.ui.tooling.preview.Preview
 import ch.heigvd.ihm.stickies.ui.*
 
@@ -29,13 +28,14 @@ fun ColorPicker(
     modifier: Modifier = Modifier,
     choices: List<Color> = AvailableColors,
 ) {
-    Row(modifier) {
-        choices.fastForEachIndexed { index, color ->
+    Row(modifier, Arrangement.spacedBy(16.dp)) {
+        for (color in choices) {
             CircularPill(
                 color = color,
-                modifier = Modifier
-                    .clickable(onClick = { onClick(color)}, indication = null)
-                    .padding(start = if (index == 0) 0.dp else 16.dp),
+                modifier = Modifier.clickable(
+                    onClick = { onClick(color) },
+                    indication = null,
+                ),
                 filled = selected == color,
                 content = {},
             )

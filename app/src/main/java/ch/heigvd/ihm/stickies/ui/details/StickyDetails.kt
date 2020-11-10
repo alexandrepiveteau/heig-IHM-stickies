@@ -16,11 +16,12 @@ fun StickyDetails(
     color: Color,
     onColorChange: (Color) -> Unit,
     modifier: Modifier = Modifier,
+    actions: @Composable RowScope.() -> Unit,
 ) {
     val (dates, setDates) = remember { mutableStateOf(emptySet<SelectionDate>()) }
     val (expanded, setExpanded) = remember { mutableStateOf(false) }
 
-    Column(modifier) {
+    Column(modifier, Arrangement.spacedBy(16.dp)) {
         Portion(title = "ADD A REMINDER") {
             DatePicker(
                 selected = dates,
@@ -32,7 +33,8 @@ fun StickyDetails(
                     }
                 },
             )
-            AnimatedVisibility(expanded,
+            AnimatedVisibility(
+                expanded,
                 enter = fadeIn() + expandVertically(Alignment.CenterVertically),
                 exit = fadeOut() + shrinkVertically(Alignment.CenterVertically),
             ) {
@@ -45,11 +47,16 @@ fun StickyDetails(
                 onClick = { setExpanded(!expanded) },
             )
         }
-        Spacer(Modifier.height(16.dp))
         // This size is known to be 76 * 7 + 16 * 8, aka the width of the CircularPill composable
         // plus the spacers of the Portion composable.
         Portion("CHOOSE A COLOR", Modifier.preferredWidth(660.dp)) {
             ColorPicker(selected = color, onClick = onColorChange)
+        }
+        Row(
+            Modifier.preferredWidth(660.dp),
+            Arrangement.spacedBy(64.dp, Alignment.CenterHorizontally),
+        ) {
+            actions()
         }
     }
 }

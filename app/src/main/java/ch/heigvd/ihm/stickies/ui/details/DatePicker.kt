@@ -34,7 +34,7 @@ fun DatePicker(
     modifier: Modifier = Modifier,
 ) {
     Row(modifier) {
-        for (day in SelectionDate.values()) {
+        for ((index, day) in SelectionDate.values().withIndex()) {
             CircularPill(
                 color = Color(0xFFF2F2F2),
                 Modifier
@@ -48,7 +48,9 @@ fun DatePicker(
                     Text(day.title, style = MaterialTheme.typography.subtitle1)
                     Text("02", style = MaterialTheme.typography.subtitle2)
                 })
-            Spacer(Modifier.width(16.dp))
+            if (index != SelectionDate.values().size - 1) {
+                Spacer(Modifier.width(16.dp))
+            }
         }
     }
 }

@@ -18,6 +18,14 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
 
+/**
+ * A composable that displays a circular pill, that can either be filled or not.
+ *
+ * @param color the color of the pill.
+ * @param modifier the [Modifier] for this composable.
+ * @param filled true if the pill is filled, false otherwise (default).
+ * @param content the inner content of the pill.
+ */
 @Composable
 fun CircularPill(
     color: Color,

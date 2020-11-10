@@ -1,16 +1,15 @@
 package ch.heigvd.ihm.stickies.ui.details
 
-import androidx.compose.animation.animate
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Text
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.ExperimentalLazyDsl
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.DensityAmbient
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -21,8 +20,8 @@ import ch.heigvd.ihm.stickies.ui.Archivo
 import ch.heigvd.ihm.stickies.ui.modifier.drawVerticalOverlay
 import java.time.LocalTime
 
-private val TimeTextLineHeight = 56.sp
-private val TimeTextHeight = 40.sp
+private val TimeTextLineHeight = 42.sp
+private val TimeTextHeight = 30.sp
 
 private val TimeTextStyle = TextStyle(
     fontFamily = Archivo,
@@ -36,11 +35,7 @@ fun TimePicker(
     time: LocalTime = LocalTime.now(),
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier.padding(32.dp),
-        Arrangement.SpaceAround,
-        Alignment.CenterVertically,
-    ) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
         val hours = (0..23).distinct()
         val hoursState = rememberLazyListState(time.hour)
 
@@ -61,9 +56,10 @@ fun TimePicker(
         Clock(
             hours = hours[currentHour],
             minutes = minutes[currentMinute],
+            Modifier.size(156.dp)
         )
 
-        Spacer(Modifier.width(128.dp))
+        Spacer(Modifier.width(64.dp))
 
         NumberPicker(
             current = currentHour,
@@ -78,7 +74,7 @@ fun TimePicker(
             state = minutesState,
             modifier = Modifier
                 .drawVerticalOverlay()
-                .padding(start = 16.dp),
+                .padding(start = 32.dp),
         )
     }
 }
@@ -94,7 +90,7 @@ private fun NumberPicker(
     val sizeInDp = with(DensityAmbient.current) { TimeTextLineHeight.toDp() }
 
     LazyColumn(
-        modifier = modifier.height(sizeInDp.times(5)),
+        modifier = modifier.height(sizeInDp.times(5)).width(48.dp),
         state = state,
     ) {
         repeat(2) { item { Text("  ", modifier.height(sizeInDp), style = TimeTextStyle) } }

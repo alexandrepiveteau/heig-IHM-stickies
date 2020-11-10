@@ -42,7 +42,7 @@ fun Model.Companion.demo(): Model = Model(
     .stickyAdd("Buy potato", Color.StickiesOrange, null, 1)
     .stickyAdd("Birthday present for Andres", Color.StickiesPink, null, 1)
     .stickyAdd("6 hamburgers\n\n- Buns\n- Steaks\n- Tomatoes", Color.StickiesBlue, null, 1)
-    .stickyAdd("Buy some bread\n\n- Whole grain\n- Without raisins", Color.StickiesYellow, System.currentTimeMillis() + 10000, 1)
+    .stickyAdd("Buy some bread\n\n- Whole grain\n- Without raisins", Color.StickiesYellow, null, 1)
     // Medical stuff.
     .stickyAdd("Take all my pills for the day :\n\n- Aspirin\n- Lotensin",
         Color.StickiesOrange,

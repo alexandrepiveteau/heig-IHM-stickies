@@ -16,17 +16,20 @@ import ch.heigvd.ihm.stickies.ui.material.BigGradientButton
 fun EditStickyOverlay(
     sticky: Sticky,
     onCancel: () -> Unit,
-    onSave: (title: String, color: Color) -> Unit,
+    onSave: (title: String, color: Color, alert: Long?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val (color, setColor) = remember { mutableStateOf(sticky.color) }
     val (text, setText) = remember { mutableStateOf(sticky.title) }
+    val (alert, setAlert) = remember { mutableStateOf(sticky.alert) }
 
     StickyDetails(
         color = color,
         text = text,
+        alert = alert,
         onColorChange = setColor,
         onTextChange = setText,
+        onAlertChange = setAlert,
         modifier = modifier,
     ) {
         BigGradientButton(
@@ -36,7 +39,7 @@ fun EditStickyOverlay(
             title = "Cancel",
         )
         BigGradientButton(
-            onClick = { onSave(text, color) },
+            onClick = { onSave(text, color, alert) },
             icon = vectorResource(R.drawable.ic_action_save),
             title = "Save",
             from = Color.StickiesSuperGraddyStart,

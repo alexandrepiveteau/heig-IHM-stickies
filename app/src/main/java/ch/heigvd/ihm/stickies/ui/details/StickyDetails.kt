@@ -15,12 +15,16 @@ import androidx.compose.ui.unit.dp
 fun StickyDetails(
     color: Color,
     text: String,
+    alert: Long?,
     onColorChange: (Color) -> Unit,
     onTextChange: (String) -> Unit,
+    onAlertChange: (Long?) -> Unit,
     modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit,
 ) {
-    val (dates, setDates) = remember { mutableStateOf(emptySet<SelectionDate>()) }
+    val (hour, setHour) = remember { mutableStateOf<Int>(9) }
+    val (minute, setMinute) = remember { mutableStateOf<Int>(0) }
+    val (day, setDay) = remember { mutableStateOf<SelectionDay?>(null) }
     val (expanded, setExpanded) = remember { mutableStateOf(false) }
 
     Row(
@@ -30,13 +34,15 @@ fun StickyDetails(
     ) {
         Column(Modifier, Arrangement.spacedBy(16.dp)) {
             Portion(title = "ADD A REMINDER") {
-                DatePicker(
-                    selected = dates,
+                DayPicker(
+                    selected = day,
                     onClick = { date ->
-                        if (dates.contains(date)) {
-                            setDates(dates - date)
+                        if (day == date) {
+                            // Callback.
+                            setDay(null)
                         } else {
-                            setDates(dates + date)
+                            // Callback.
+                            setDay(day)
                         }
                     },
                     selectionColor = color,
@@ -48,10 +54,10 @@ fun StickyDetails(
                 ) {
                     Spacer(Modifier.height(16.dp))
                     TimePicker(
-                        initialHour = 9,
-                        initialMinute = 0,
-                        onHour = {},
-                        onMinute = {},
+                        initialHour = hour,
+                        initialMinute = minute,
+                        onHour = setHour,
+                        onMinute = setMinute,
                     )
                 }
                 Spacer(Modifier.height(16.dp))

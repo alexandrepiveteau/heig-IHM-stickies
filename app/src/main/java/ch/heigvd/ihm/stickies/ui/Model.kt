@@ -188,13 +188,15 @@ data class Model(
      * @param identifier the identifier of this sticky.
      * @param title the [String] title associated with the sticky.
      * @param color the updated [Color] of the sticky.
+     * @param alert when the [Sticky] RINGS.
      */
     fun stickyUpdate(
         identifier: StickyIdentifier,
         title: String,
         color: Color,
+        alert: Long?,
     ) : Model {
-        val sticky = stickies[identifier]?.copy(title = title, color = color)
+        val sticky = stickies[identifier]?.copy(title = title, color = color, alert = alert)
         val updated = sticky?.let { this.stickies.put(identifier, it) } ?: this.stickies
         return this.copy(
             stickies = updated

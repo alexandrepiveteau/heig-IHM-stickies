@@ -32,7 +32,7 @@ fun Sticky(
     }
 }
 
-private val StickyFont = TextStyle(
+val StickyTextStyle = TextStyle(
     fontSize = 32.sp,
     lineHeight = 48.sp,
     fontFamily = GochiHand,
@@ -56,7 +56,7 @@ fun Sticky(
             Modifier.padding(8.dp),
             alignment = Alignment.Center
         ) {
-            ProvideTextStyle(StickyFont) {
+            ProvideTextStyle(StickyTextStyle) {
                 content()
             }
         }

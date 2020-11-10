@@ -1,5 +1,7 @@
 package ch.heigvd.ihm.stickies.ui.details
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
@@ -11,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun StickyDetails(
     color: Color,
@@ -49,18 +52,15 @@ fun StickyDetails(
                         .align(Alignment.CenterHorizontally),
                 )
 
-                ExpandableButton(
+                ExpandButton(
                     expanded = expanded,
                     onClick = { setExpanded(!expanded) },
-                    color = Color(0x999999),
-                    contractedText = "More settings",
-                    expandedText = "Less settings",
                     modifier = Modifier
                         .padding(vertical = 16.dp)
                         .align(Alignment.CenterHorizontally),
                 )
 
-                if (expanded) {
+                AnimatedVisibility(expanded) {
                     TimePicker(
                         modifier = Modifier.align(Alignment.CenterHorizontally),
                     )

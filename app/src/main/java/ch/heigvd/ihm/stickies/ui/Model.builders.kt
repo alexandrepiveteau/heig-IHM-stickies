@@ -41,7 +41,7 @@ fun Model.Companion.demo(): Model = Model(
     .stickyAdd("Neew keyybo rd", Color.StickiesGreen, null, 1)
     .stickyAdd("Buy potato", Color.StickiesOrange, null, 1)
     .stickyAdd("Birthday present for Andres", Color.StickiesPink, null, 1)
-    .stickyAdd("6 hamburgers\n\n- Buns\n- Steaks\n- Tomatoes", Color.StickiesBlue, null, 1)
+    .stickyAdd("6 hamburgers\n- Buns\n- Steaks\n- Tomatoes", Color.StickiesBlue, null, 1)
     .stickyAdd("Buy some bread\n- Whole grain\n- Without raisins", Color.StickiesYellow, System.currentTimeMillis() + 30 * 1000, 1)
     // Medical stuff.
     .stickyAdd("Take all my pills for the day :\n- Aspirin\n- Lotensin",

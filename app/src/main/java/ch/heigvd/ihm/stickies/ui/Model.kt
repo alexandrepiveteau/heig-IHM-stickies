@@ -182,6 +182,13 @@ data class Model(
         )
     }
 
+    /**
+     * Updates the data that is contained in a sticky.
+     *
+     * @param identifier the identifier of this sticky.
+     * @param title the [String] title associated with the sticky.
+     * @param color the updated [Color] of the sticky.
+     */
     fun stickyUpdate(
         identifier: StickyIdentifier,
         title: String,

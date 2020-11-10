@@ -82,7 +82,7 @@ fun App() {
         NewSticky(
             onCancel = { adding = false },
             onNewSticky = { title, color ->
-                state.value = state.value.stickyAdd(title, color, false, 0)
+                state.value = state.value.stickyAdd(title, color, null, 0)
                 adding = false
             },
             modifier = Modifier.overlay(),

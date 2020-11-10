@@ -3,6 +3,7 @@ package ch.heigvd.ihm.stickies.ui.stickies
 import androidx.compose.foundation.ProvideTextStyle
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.preferredSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,16 +20,26 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ch.heigvd.ihm.stickies.ui.GochiHand
+import ch.heigvd.ihm.stickies.ui.StickiesNicerRed
+
+private val StickyAlertTextStyle = TextStyle(
+    fontSize = 16.sp,
+    fontFamily = GochiHand,
+    fontWeight = FontWeight.Normal,
+    color = Color.StickiesNicerRed,
+)
 
 @Composable
 fun Sticky(
     text: String,
+    alert: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colors.surface,
     elevation: Dp = StickyDefaultElevation,
 ) {
     Sticky(modifier, color, elevation) {
-        Text(text, textAlign = TextAlign.Center)
+        Text(alert, Modifier.align(Alignment.TopStart), style = StickyAlertTextStyle)
+        Text(text, Modifier.padding(vertical = 8.dp), textAlign = TextAlign.Center)
     }
 }
 
@@ -44,7 +55,7 @@ fun Sticky(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colors.surface,
     elevation: Dp = StickyDefaultElevation,
-    content: @Composable () -> Unit,
+    content: @Composable BoxScope.() -> Unit,
 ) {
     Surface(
         modifier = modifier.preferredSize(StickySize),
@@ -53,7 +64,7 @@ fun Sticky(
         elevation = elevation,
     ) {
         Box(
-            Modifier.padding(8.dp),
+            Modifier.padding(16.dp),
             alignment = Alignment.Center
         ) {
             ProvideTextStyle(StickyTextStyle) {

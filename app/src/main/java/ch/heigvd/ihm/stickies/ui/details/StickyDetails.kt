@@ -1,6 +1,7 @@
 package ch.heigvd.ihm.stickies.ui.details
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -9,18 +10,72 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import java.time.DayOfWeek
+import java.time.Instant
+import java.time.ZoneId
+
+private fun DayOfWeek.asSelectionDay(): SelectionDay = when (this) {
+    DayOfWeek.MONDAY -> SelectionDay.Monday
+    DayOfWeek.TUESDAY -> SelectionDay.Tuesday
+    DayOfWeek.WEDNESDAY -> SelectionDay.Wednesday
+    DayOfWeek.THURSDAY -> SelectionDay.Thursday
+    DayOfWeek.FRIDAY -> SelectionDay.Friday
+    DayOfWeek.SATURDAY -> SelectionDay.Saturday
+    DayOfWeek.SUNDAY -> SelectionDay.Sunday
+}
+
+private fun hour(timestamp: Long): Int {
+    return Instant.ofEpochMilli(timestamp)
+        .atZone(ZoneId.systemDefault())
+        .hour
+}
+
+private fun minute(timestamp: Long): Int {
+    return Instant.ofEpochMilli(timestamp)
+        .atZone(ZoneId.systemDefault())
+        .minute
+}
+
+private fun day(timestamp: Long): SelectionDay {
+    return Instant.ofEpochMilli(timestamp)
+        .atZone(ZoneId.systemDefault())
+        .dayOfWeek
+        .asSelectionDay()
+}
+
+private fun asTimestamp(
+    today: SelectionDay,
+    hour: Int,
+    minute: Int,
+    selectionDay: SelectionDay?,
+) =
+    selectionDay?.let { day ->
+        val now = Instant.ofEpochMilli(System.currentTimeMillis())
+            .atZone(ZoneId.systemDefault())
+
+        return@let now.plusDays((day - today).toLong())
+            .withHour(hour)
+            .withMinute(minute)
+            .toInstant()
+            .toEpochMilli()
+    }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun StickyDetails(
     color: Color,
     text: String,
+    alert: Long?,
     onColorChange: (Color) -> Unit,
     onTextChange: (String) -> Unit,
+    onAlertChange: (Long?) -> Unit,
     modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit,
 ) {
-    val (dates, setDates) = remember { mutableStateOf(emptySet<SelectionDate>()) }
+    val today = remember { day(System.currentTimeMillis()) }
+    val (hour, setHour) = remember { mutableStateOf(alert?.let(::hour) ?: 9) }
+    val (minute, setMinute) = remember { mutableStateOf(alert?.let(::minute) ?: 0) }
+    val (day, setDay) = remember { mutableStateOf(alert?.let(::day)) }
     val (expanded, setExpanded) = remember { mutableStateOf(false) }
 
     Row(
@@ -30,16 +85,20 @@ fun StickyDetails(
     ) {
         Column(Modifier, Arrangement.spacedBy(16.dp)) {
             Portion(title = "ADD A REMINDER") {
-                DatePicker(
-                    selected = dates,
+                DayPicker(
+                    selected = day,
                     onClick = { date ->
-                        if (dates.contains(date)) {
-                            setDates(dates - date)
+                        onAlertChange(asTimestamp(today, hour, minute, day))
+                        if (day == date) {
+                            // Callback.
+                            setDay(null)
                         } else {
-                            setDates(dates + date)
+                            // Callback.
+                            setDay(date)
                         }
                     },
                     selectionColor = color,
+                    today = today,
                 )
                 AnimatedVisibility(
                     expanded,
@@ -48,10 +107,16 @@ fun StickyDetails(
                 ) {
                     Spacer(Modifier.height(16.dp))
                     TimePicker(
-                        initialHour = 9,
-                        initialMinute = 0,
-                        onHour = {},
-                        onMinute = {},
+                        initialHour = hour,
+                        initialMinute = minute,
+                        onHour = {
+                            onAlertChange(asTimestamp(today, hour, minute, day))
+                            setHour(it)
+                        },
+                        onMinute = {
+                            onAlertChange(asTimestamp(today, hour, minute, day))
+                            setMinute(it)
+                        },
                     )
                 }
                 Spacer(Modifier.height(16.dp))

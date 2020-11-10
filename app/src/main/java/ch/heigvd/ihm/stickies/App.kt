@@ -81,8 +81,8 @@ fun App() {
     if (adding) {
         NewSticky(
             onCancel = { adding = false },
-            onNewSticky = { title, color ->
-                state.value = state.value.stickyAdd(title, color, false, 0)
+            onNewSticky = { title, color, alert ->
+                state.value = state.value.stickyAdd(title, color, alert, 0)
                 adding = false
             },
             modifier = Modifier.overlay(),
@@ -95,8 +95,8 @@ fun App() {
             EditStickyOverlay(
                 sticky = sticky,
                 onCancel = { editing = null },
-                onSave = { title, color ->
-                    state.value = state.value.stickyUpdate(id, title, color)
+                onSave = { title, color, alert ->
+                    state.value = state.value.stickyUpdate(id, title, color, alert)
                     editing = null
                 },
                 modifier = Modifier.overlay(),

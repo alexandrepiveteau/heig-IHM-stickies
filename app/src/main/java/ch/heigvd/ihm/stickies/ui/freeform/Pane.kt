@@ -39,7 +39,11 @@ import ch.heigvd.ihm.stickies.ui.freeform.PaneConstants.StickyMinStiffness
 import ch.heigvd.ihm.stickies.ui.modifier.offset
 import ch.heigvd.ihm.stickies.ui.modifier.offsetPx
 import ch.heigvd.ihm.stickies.ui.stickies.*
+import ch.heigvd.ihm.stickies.util.timestampFlow
 import dev.chrisbanes.compose.navigationBarsPadding
+import java.time.Instant
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 typealias Timestamp = Long
 
@@ -220,10 +224,12 @@ fun Pane(
                 }
                 val position = drag.position ?: stickyRestOffset
                 val scope = LifecycleOwnerAmbient.current.lifecycleScope
+                val bubbled by remember(sticky.alert) { timestampFlow(sticky.alert) }.collectAsState(false)
 
                 FreeformSticky(
                     detailed = isSelfOpen,
-                    bubbled = sticky.highlighted,
+                    bubbled = bubbled,
+                    alert = sticky.alert?.let(::alertText) ?: "",
                     dragged = drag.isDragging,
                     offset = position,
                     title = sticky.title,
@@ -319,6 +325,7 @@ fun Pane(
 private fun FreeformSticky(
     detailed: Boolean,
     bubbled: Boolean,
+    alert: String,
     dragged: Boolean,
     offset: Offset,
     title: String,
@@ -366,6 +373,7 @@ private fun FreeformSticky(
     ) {
         Sticky(
             text = title,
+            alert = alert,
             color = color,
             elevation = elevation,
             modifier = Modifier

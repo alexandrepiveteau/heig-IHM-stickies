@@ -37,24 +37,24 @@ fun Model.Companion.demo(): Model = Model(
 )
     // Inbox.
     // Groceries.
-    .stickyAdd("A new tablet", Color.StickiesYellow, false, 1)
-    .stickyAdd("Neew keyybo rd", Color.StickiesGreen, false, 1)
-    .stickyAdd("Buy potato", Color.StickiesOrange, false, 1)
-    .stickyAdd("Birthday present for Andres", Color.StickiesPink, false, 1)
-    .stickyAdd("6 hamburgers\n\n- Buns\n- Steaks\n- Tomatoes", Color.StickiesBlue, false, 1)
-    .stickyAdd("Buy some bread\n\n- Whole grain\n- Without raisins", Color.StickiesYellow, true, 1)
+    .stickyAdd("A new tablet", Color.StickiesYellow, null, 1)
+    .stickyAdd("Neew keyybo rd", Color.StickiesGreen, null, 1)
+    .stickyAdd("Buy potato", Color.StickiesOrange, null, 1)
+    .stickyAdd("Birthday present for Andres", Color.StickiesPink, null, 1)
+    .stickyAdd("6 hamburgers\n\n- Buns\n- Steaks\n- Tomatoes", Color.StickiesBlue, null, 1)
+    .stickyAdd("Buy some bread\n- Whole grain\n- Without raisins", Color.StickiesYellow, System.currentTimeMillis() + 30 * 1000, 1)
     // Medical stuff.
-    .stickyAdd("Take all my pills for the day :\n\n- Aspirin\n- Lotensin",
+    .stickyAdd("Take all my pills for the day :\n- Aspirin\n- Lotensin",
         Color.StickiesOrange,
-        false,
+        null,
         2)
     // Appointments.
-    .stickyAdd("Netflix & Chill with Jeanette", Color.StickiesYellow, false, 3)
-    .stickyAdd("IHM presentation", Color.StickiesBlue, false, 3)
-    .stickyAdd("Dentist at 10 am", Color.StickiesOrange, true, 3)
+    .stickyAdd("Netflix & Chill with Jeanette", Color.StickiesYellow, null, 3)
+    .stickyAdd("IHM presentation", Color.StickiesBlue, null, 3)
+    .stickyAdd("Dentist at 10 am", Color.StickiesOrange, System.currentTimeMillis() + 60 * 1000, 3)
     // Exercice.
-    .stickyAdd("Walk around the block\n(use a face mask)", Color.StickiesGreen, false, 4)
+    .stickyAdd("Walk around the block\n(use a face mask)", Color.StickiesGreen, null, 4)
     // Medor.
-    .stickyAdd("Tell him he's a good boy", Color.StickiesOrange, false, 5)
-    .stickyAdd("Buy a new bone", Color.StickiesBlue, false, 5)
-    .stickyAdd("Take Medor to the vet", Color.StickiesYellow, false, 5)
+    .stickyAdd("Tell him he's a good boy", Color.StickiesOrange, null, 5)
+    .stickyAdd("Buy a new bone", Color.StickiesBlue, null, 5)
+    .stickyAdd("Take Medor to the vet", Color.StickiesYellow, System.currentTimeMillis() + 240 * 1000, 5)

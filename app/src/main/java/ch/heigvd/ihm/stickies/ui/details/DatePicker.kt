@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
 import ch.heigvd.ihm.stickies.ui.StickiesGreen
 
-enum class SelectionDate(val title: String) {
+enum class SelectionDay(val title: String) {
     Monday("Mon"),
     Tuesday("Tue"),
     Wednesday("Wed"),
@@ -29,17 +29,33 @@ enum class SelectionDate(val title: String) {
     Sunday("Sun");
 }
 
+operator fun SelectionDay.minus(other: SelectionDay): Int {
+    val firstIndex = SelectionDay.values().indexOf(this)
+    val secondIndex = SelectionDay.values().indexOf(other)
+    val delta = secondIndex - firstIndex
+    return if (delta < 0) {
+        delta + 7
+    } else {
+        delta
+    }
+}
+
 @Composable
-fun DatePicker(
-    selected: Set<SelectionDate>,
-    onClick: (SelectionDate) -> Unit,
+fun DayPicker(
+    selected: SelectionDay?,
+    today: SelectionDay,
+    onClick: (SelectionDay) -> Unit,
     selectionColor: Color,
     modifier: Modifier = Modifier,
 ) {
     val defaultColor = Color(0xFFF2F2F2)
+    val days = SelectionDay.values() + SelectionDay.values()
+    val displayed = days
+        .drop(SelectionDay.values().indexOf(today))
+        .take(SelectionDay.values().size)
     Row(modifier, Arrangement.spacedBy(16.dp)) {
-        for (day in SelectionDate.values()) {
-            val filled = selected.contains(day)
+        for (day in displayed) {
+            val filled = selected == day
             CircularPill(
                 color = animate(if (filled) selectionColor else defaultColor),
                 modifier = Modifier
@@ -61,15 +77,16 @@ fun DatePicker(
 @Composable
 @Preview
 private fun DatePickerPreview() {
-    Stack(Modifier.background(Color.White).padding(16.dp)) {
-        val (dates, setDates) = remember { mutableStateOf(emptySet<SelectionDate>()) }
-        DatePicker(
-            selected = dates,
+    Box(Modifier.background(Color.White).padding(16.dp)) {
+        val (day, setDay) = remember { mutableStateOf<SelectionDay?>(null) }
+        DayPicker(
+            selected = day,
+            today = SelectionDay.Wednesday,
             onClick = { date ->
-                if (dates.contains(date)) {
-                    setDates(dates - date)
+                if (date == day) {
+                    setDay(null)
                 } else {
-                    setDates(dates + date)
+                    setDay(date)
                 }
             },
             selectionColor = Color.StickiesGreen,

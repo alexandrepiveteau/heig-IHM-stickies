@@ -63,7 +63,7 @@ data class Sticky(
     // Sticky properties.
     val color: Color,
     val title: String,
-    val highlighted: Boolean,
+    val alert: Long?,
 )
 
 data class Category(
@@ -158,20 +158,20 @@ data class Model(
      *
      * @param title the [String] title of the added sticky.
      * @param color the color to be set to the new sticky.
-     * @param highlighted true if the sticky is currently highlighted.
+     * @param alert the timestamp at which the sticky is highlighted.
      * @param toPile the pile index to which the sticky is added.
      */
     fun stickyAdd(
         title: String,
         color: Color,
-        highlighted: Boolean,
+        alert: Long?,
         toPile: Int,
     ): Model {
         val sticky = Sticky(
             identifier = StickyIdentifier((this.stickies.maxOfOrNull { it.key.backing } ?: 0) + 1),
             title = title,
             color = color,
-            highlighted = highlighted,
+            alert = alert,
             pileIndex = nextHeight,
             category = toPile.coerceIn(0 until categories.size),
         )
@@ -188,13 +188,15 @@ data class Model(
      * @param identifier the identifier of this sticky.
      * @param title the [String] title associated with the sticky.
      * @param color the updated [Color] of the sticky.
+     * @param alert when the [Sticky] RINGS.
      */
     fun stickyUpdate(
         identifier: StickyIdentifier,
         title: String,
         color: Color,
+        alert: Long?,
     ) : Model {
-        val sticky = stickies[identifier]?.copy(title = title, color = color)
+        val sticky = stickies[identifier]?.copy(title = title, color = color, alert = alert)
         val updated = sticky?.let { this.stickies.put(identifier, it) } ?: this.stickies
         return this.copy(
             stickies = updated
@@ -218,7 +220,7 @@ data class Model(
                 model.stickyAdd(
                     title = maybeSticky.title,
                     color = maybeSticky.color,
-                    highlighted = maybeSticky.highlighted,
+                    alert = maybeSticky.alert,
                     toPile = maybeSticky.category,
                 )
             } ?: model

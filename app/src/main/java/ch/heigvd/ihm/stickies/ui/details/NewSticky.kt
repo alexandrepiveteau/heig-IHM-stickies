@@ -15,17 +15,20 @@ import ch.heigvd.ihm.stickies.ui.material.BigGradientButton
 @Composable
 fun NewSticky(
     onCancel: () -> Unit,
-    onNewSticky: (title: String, color: Color) -> Unit,
+    onNewSticky: (title: String, color: Color, alert: Long?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val (color, setColor) = remember { mutableStateOf(Color.StickiesYellow) }
     val (text, setText) = remember { mutableStateOf("") }
+    val (alert, setAlert) = remember { mutableStateOf<Long?>(null) }
 
     StickyDetails(
         color = color,
         onColorChange = setColor,
         text = text,
         onTextChange = setText,
+        alert = alert,
+        onAlertChange = setAlert,
         modifier = modifier,
     ) {
         BigGradientButton(
@@ -35,7 +38,7 @@ fun NewSticky(
             title = "Cancel",
         )
         BigGradientButton(
-            onClick = { onNewSticky(text, color) },
+            onClick = { onNewSticky(text, color, alert) },
             from = Color.StickiesSuperGraddyStart, to = Color.StickiesSuperGraddyEnd,
             icon = vectorResource(R.drawable.ic_action_save),
             title = "Save",

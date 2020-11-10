@@ -34,7 +34,7 @@ fun NewSticky(
         BigGradientButton(
             onClick = { onCancel() },
             from = Color.Black.copy(alpha = 0.2f), to = Color.Black.copy(alpha = 0.3f),
-            icon = vectorResource(R.drawable.ic_category_action_trash),
+            icon = vectorResource(R.drawable.ic_action_close),
             title = "Cancel",
         )
         BigGradientButton(

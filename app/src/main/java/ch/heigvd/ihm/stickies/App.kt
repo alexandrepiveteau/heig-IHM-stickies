@@ -96,7 +96,7 @@ fun App() {
         NewSticky(
             onCancel = { adding = false },
             onNewSticky = { title, color, alert ->
-                state.value = state.value.stickyAdd(title, color, alert, 0)
+                state.value = state.value.stickyAdd(title, color, alert, state.value.categoryOpenIndex ?: 0)
                 adding = false
             },
             modifier = Modifier.overlay(),

@@ -102,12 +102,13 @@ fun StickyDetails(
                 DayPicker(
                     selected = day,
                     onClick = { date ->
-                        onAlertChange(asTimestamp(day(now), hour, minute, day))
                         if (day == date) {
                             // Callback.
+                            onAlertChange(null)
                             setDay(null)
                         } else {
                             // Callback.
+                            onAlertChange(asTimestamp(day(now), hour, minute, date))
                             setDay(date)
                         }
                     },

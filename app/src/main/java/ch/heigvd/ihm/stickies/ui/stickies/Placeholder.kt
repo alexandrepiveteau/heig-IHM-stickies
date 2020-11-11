@@ -66,7 +66,7 @@ fun PlaceholderTitle(
                     Spacer(Modifier.preferredWidth(16.dp))
                     Text(title, style = HintTextStyle)
                     Spacer(Modifier.preferredWidth(16.dp))
-                    Providers(AmbientContentColor provides Color.Black.copy(alpha = 0.06f)) {
+                    Providers(AmbientContentColor provides color.copy(alpha = 0.06f)) {
                         Icon(vectorResource(R.drawable.ic_action_drag))
                     }
                 }
